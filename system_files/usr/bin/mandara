@@ -1,0 +1,86 @@
+#!/usr/bin/sh
+# Mandara OS: starts Mandara from /var/lib/mandara/bin/mandara, a writable
+# copy of the image's /usr/lib/mandara/mandara-bin, so Studio -> About ->
+# Update now can patch it without root (the running binary, /proc/self/exe,
+# is that copy).
+#
+# - The copy is made when it's missing, and again when the OS image brings a
+#   newer Mandara than the copy (a newer self-update is kept).
+# - When the shell (no arguments) fails to start from an updated copy and no
+#   other Mandara shell is running, the image's version is put back and
+#   started instead.
+# - Anyone who can't write the folder (the login screen) runs the image's copy.
+
+golden=/usr/lib/mandara/mandara-bin
+dir=/var/lib/mandara/bin
+live=$dir/mandara
+stamp=$dir/.seeded-from
+image_version=$(cat /usr/lib/mandara/VERSION 2>/dev/null)
+
+# "mandara 0.28.0 (…)" -> "0.28.0"
+version_of() {
+	"$1" --version 2>/dev/null | awk 'NR == 1 { print $2 }'
+}
+
+# Whether version $1 is newer than version $2.
+newer() {
+	[ -n "$1" ] && [ "$1" != "$2" ] &&
+		[ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" = "$1" ]
+}
+
+# Writes $1 to $2 through a temporary file and a rename, mode $3, so every
+# wheel member can replace it later.
+publish() {
+	tmp=$(mktemp "$dir/.publish.XXXXXX") || return 1
+	if cat "$1" >"$tmp" && chmod "$3" "$tmp" && mv -f "$tmp" "$2"; then
+		return 0
+	fi
+	rm -f "$tmp"
+	return 1
+}
+
+# Records which image version the copy came from.
+mark() {
+	printf '%s\n' "$image_version" | publish /dev/stdin "$stamp" 0664
+}
+
+# Copies the image's binary into place, atomically.
+seed() {
+	publish "$golden" "$live" 0775 && mark
+}
+
+if [ ! -w "$dir" ]; then
+	exec "$golden" "$@"
+fi
+
+if [ ! -x "$live" ]; then
+	seed || exec "$golden" "$@"
+elif [ "$(cat "$stamp" 2>/dev/null)" != "$image_version" ]; then
+	# The OS image changed since the copy was made.
+	if newer "$(version_of "$live")" "$image_version"; then
+		mark
+	else
+		seed || exec "$golden" "$@"
+	fi
+fi
+
+if [ $# -gt 0 ] || cmp -s "$live" "$golden"; then
+	exec "$live" "$@"
+fi
+
+# The shell itself, from a self-updated binary: watch it start.
+"$live"
+status=$?
+# A failure exit, or death by SIGILL, SIGABRT, SIGBUS, SIGFPE or SIGSEGV (not
+# the SIGHUP / SIGTERM / SIGKILL of a session ending).
+case $status in
+0 | 129 | 130 | 137 | 143) failed=false ;;
+[1-9] | [1-9][0-9] | 1[01][0-9] | 12[0-7] | 132 | 134 | 135 | 136 | 139) failed=true ;;
+*) failed=false ;;
+esac
+if $failed && ! "$golden" msg ping >/dev/null 2>&1; then
+	logger -t mandara "Mandara $(version_of "$live") exited with status $status; going back to $image_version from the OS image" 2>/dev/null
+	seed && exec "$live"
+	exec "$golden"
+fi
+exit "$status"

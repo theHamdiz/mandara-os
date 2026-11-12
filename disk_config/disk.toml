@@ -1,0 +1,15 @@
+# bootc-image-builder settings for the ready-to-boot disks (qcow2, vmdk, raw).
+# Built with --rootfs btrfs; zstd:1 compression is switched on at boot by
+# mandara-btrfs-compress.service.
+
+# The account the ready-made disks start with. Its password is public, so
+# mandara-expire-default-password.service expires it on the first boot and
+# the first login asks for a new one.
+[[customizations.user]]
+name = "mandara"
+password = "mandara"
+groups = ["wheel"]
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "40 GiB"

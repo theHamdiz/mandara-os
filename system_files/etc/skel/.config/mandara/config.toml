@@ -1,0 +1,8 @@
+# Mandara OS defaults for a new account: the bundled wallpapers, rotating.
+# Everything not set here is Mandara's own default (the Mandara Corniche
+# theme among them), and Mandara Studio keeps this file from now on.
+[wallpaper]
+path = "/usr/share/backgrounds/mandara/blue-gold-forest.jpg"
+
+[wallpaper.slideshow]
+enabled = true

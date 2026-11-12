@@ -1,0 +1,40 @@
+# Quick checks for pull requests. They never build the OS: only a Mandara
+# release does (see build-os.yml).
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Shell scripts
+        run: |
+          shellcheck --shell=bash build_files/*.sh
+          shellcheck --shell=sh system_files/usr/bin/mandara system_files/usr/libexec/mandara-os/rustup-seed \
+            system_files/etc/profile.d/*.sh
+
+      - name: TOML files
+        run: |
+          python3 - <<'PY'
+          import pathlib, tomllib
+          files = [*pathlib.Path("disk_config").glob("*.toml"), *pathlib.Path("system_files").rglob("*.toml")]
+          for f in files:
+              tomllib.loads(f.read_text())
+              print("ok", f)
+          PY
+
+      - name: Fontconfig
+        run: |
+          sudo apt-get install -yq libxml2-utils >/dev/null
+          xmllint --noout system_files/etc/fonts/conf.d/*.conf

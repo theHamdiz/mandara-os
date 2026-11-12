@@ -1,0 +1,80 @@
+# Mandara OS boot splash: the emblem fades in over Corniche night blue
+# (#0B0F17) above a turning sea-glass arc. Disk passwords are asked below it.
+
+Window.SetBackgroundTopColor(0.043, 0.059, 0.090);
+Window.SetBackgroundBottomColor(0.043, 0.059, 0.090);
+
+center_x = Window.GetX() + Window.GetWidth() / 2;
+center_y = Window.GetY() + Window.GetHeight() / 2;
+
+emblem.image = Image("emblem.png");
+emblem.sprite = Sprite(emblem.image);
+emblem.sprite.SetX(center_x - emblem.image.GetWidth() / 2);
+emblem.sprite.SetY(center_y - emblem.image.GetHeight() / 2 - 40);
+emblem.sprite.SetZ(10);
+emblem.sprite.SetOpacity(0);
+
+arc.image = Image("arc.png");
+arc.sprite = Sprite();
+arc.sprite.SetX(center_x - arc.image.GetWidth() / 2);
+arc.sprite.SetY(center_y + emblem.image.GetHeight() / 2 + 8);
+arc.sprite.SetZ(10);
+
+frame = 0;
+
+fun refresh_callback() {
+    frame++;
+    # About 50 refreshes a second: a 0.7 s fade-in, one turn every 1.2 s.
+    if (frame < 35)
+        emblem.sprite.SetOpacity(frame / 35);
+    else
+        emblem.sprite.SetOpacity(1);
+    arc.sprite.SetImage(arc.image.Rotate(frame * 2 * 3.14159 / 60));
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+# --- Disk password -----------------------------------------------------------
+
+prompt.sprite = Sprite();
+prompt.sprite.SetZ(20);
+bullets.sprite = Sprite();
+bullets.sprite.SetZ(20);
+
+fun show_text(sprite, text, y) {
+    image = Image.Text(text, 0.91, 0.94, 0.97, 1, "Sans 13");
+    sprite.SetImage(image);
+    sprite.SetX(center_x - image.GetWidth() / 2);
+    sprite.SetY(y);
+    sprite.SetOpacity(1);
+}
+
+fun display_password_callback(prompt_text, bullet_count) {
+    arc.sprite.SetOpacity(0);
+    if (prompt_text == "")
+        prompt_text = "Disk password";
+    show_text(prompt.sprite, prompt_text, center_y + emblem.image.GetHeight() / 2 + 8);
+    dots = "";
+    for (i = 0; i < bullet_count; i++)
+        dots += "•";
+    if (dots == "")
+        dots = " ";
+    show_text(bullets.sprite, dots, center_y + emblem.image.GetHeight() / 2 + 40);
+}
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+
+fun display_normal_callback() {
+    prompt.sprite.SetOpacity(0);
+    bullets.sprite.SetOpacity(0);
+    arc.sprite.SetOpacity(1);
+}
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+
+# --- Messages (e.g. "Press Esc for details") ---------------------------------
+
+message.sprite = Sprite();
+message.sprite.SetZ(20);
+
+fun message_callback(text) {
+    show_text(message.sprite, text, Window.GetY() + Window.GetHeight() - 60);
+}
+Plymouth.SetMessageFunction(message_callback);
