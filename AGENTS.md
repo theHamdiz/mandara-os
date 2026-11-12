@@ -30,7 +30,7 @@ image decides the whole system:
   the shell, the login screen (greetd) and the lock screen, with a Plymouth
   boot splash, fonts, icons, cursor and wallpapers chosen to match.
 - **The developer toolchain.** C/C++ and Rust compilers, Podman and Docker,
-  git and gh, 22 Rust command-line tools, and a stable Rust toolchain seeded
+  git and gh, 23 Rust command-line tools, and a stable Rust toolchain seeded
   into each home on first use.
 - **The update model.** Atomic image updates and rollbacks with `bootc`;
   Mandara updates itself in place without root.

@@ -124,6 +124,7 @@ t=$(latest_tag chmln/sd) && install_release chmln/sd "$t" "sd-$t-$musl.tar.gz" s
 t=$(latest_tag ducaale/xh) && install_release ducaale/xh "$t" "xh-$t-$musl.tar.gz" xh
 t=$(latest_tag dalance/procs) && install_release dalance/procs "$t" "procs-$t-$ARCH-linux.zip" procs
 t=$(latest_tag nextest-rs/nextest) && install_release nextest-rs/nextest "$t" "$t-$musl.tar.gz" cargo-nextest
+t=$(latest_tag ouch-org/ouch) && install_release ouch-org/ouch "$t" "ouch-$musl.tar.gz" ouch
 
 # --- Cursor and fonts ------------------------------------------------------
 t=$(latest_tag ful1e5/Bibata_Cursor)

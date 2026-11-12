@@ -77,9 +77,9 @@ up with `sudo bootc upgrade`.
 | **What** | A bootable Fedora desktop image: Mandara Shell on MangoWM, with its own login screen, lock screen and boot splash |
 | **Base** | Fedora 45 via [Universal Blue](https://universal-blue.org) `base-main` on x86_64 (codecs, firmware, ujust), Fedora `fedora-bootc` on aarch64 |
 | **Kernel** | CachyOS with LTO, the `scx_lavd` scheduler in performance mode and KSM on x86_64; Fedora's kernel on aarch64 |
-| **Apps** | Ghostty, Helium and Files. That's the list |
+| **Apps** | Ghostty (terminal), Helium (browser), Files (with built-in archive extraction and compression) and Celluloid (media player). That's the list |
 | **Developers** | git, gh, clang/lld/lldb, gcc, cmake, meson, Podman, Docker Engine, and Rust ready offline through rustup |
-| **Terminal** | 22 Rust command-line tools, starship, fish and bash, all wired up |
+| **Terminal** | 23 Rust command-line tools, starship, fish and bash, all wired up |
 | **Downloads** | Installer ISO, plus ready-to-boot qcow2, vmdk and raw disks, for x86_64 and aarch64 |
 | **Updates** | `sudo bootc upgrade` for the system; Studio → About → **Update now** for Mandara, without root |
 | **License** | GPL-3.0-or-later |
@@ -96,7 +96,7 @@ Mandara OS is the whole machine around it, tuned as one piece:
 | **Kernel** | Your distribution's | CachyOS LTO with `scx_lavd` and KSM (x86_64) |
 | **System tuning** | Your distribution's | Low-latency kernel arguments, BBR, Btrfs with zstd, masked idle services |
 | **Compositor** | Your distribution's package | MangoWM and scenefx compiled with ThinLTO for x86-64-v3, or ARMv8 with crypto and CRC |
-| **Developer tools** | Whatever you install | C/C++, Rust, Podman, Docker and 22 Rust command-line tools, ready |
+| **Developer tools** | Whatever you install | C/C++, Rust, Podman, Docker and 23 Rust command-line tools, ready |
 | **Updates** | Your package manager | Atomic image updates with one-command rollback |
 
 ## What sets it apart
@@ -131,7 +131,7 @@ Mandara OS is the whole machine around it, tuned as one piece:
 
 6. **The best of Rust in the terminal.** ripgrep, bat, fd, starship, helix,
    delta, zoxide, hyperfine, yazi, zellij, atuin, just, gitui, eza, tokei,
-   bottom, bandwhich, dust, procs, sd, xh and cargo-nextest, with starship,
+   bottom, bandwhich, dust, procs, sd, xh, ouch (archives) and cargo-nextest, with starship,
    zoxide and atuin already set up in bash and fish, and delta as git's
    pager.
 
