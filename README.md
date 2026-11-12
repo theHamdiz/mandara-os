@@ -165,6 +165,27 @@ in the wallpaper picker and on the login screen too.
 
 ## Download
 
+One command gets the newest release for your machine. It picks your
+architecture, downloads the parts in parallel (and resumes if interrupted),
+joins them, checks the SHA-256 and unpacks disk images:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/theHamdiz/mandara-os/main/download.sh | sh
+```
+
+That's the installer ISO. For a ready-made disk, name the format: `qcow2`
+(GNOME Boxes, virt-manager, QEMU, Proxmox), `vmdk` (VirtualBox, VMware) or
+`raw` (Parallels, UTM):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/theHamdiz/mandara-os/main/download.sh | sh -s -- qcow2
+```
+
+More options: `--arch x86_64|aarch64`, `--version X.Y.Z`, `--dir DIR`,
+`--jobs N` (parallel downloads, default 4), `--keep` (keep the parts) and
+`--list` (only show what it would download). Read it first at
+[`download.sh`](download.sh).
+
 Each [release](https://github.com/theHamdiz/mandara-os/releases) is named
 after the Mandara version it's built around and carries these files for
 `x86_64` and `aarch64`:
@@ -177,9 +198,9 @@ after the Mandara version it's built around and carries these files for
 | `mandara-os-<version>-<arch>.raw.zst` | Parallels, UTM, or writing straight to a disk |
 | `SHA256SUMS-<arch>` | Checksums for all of the above |
 
-Files over 2 GiB come in numbered parts (`.part00`, `.part01`, …). For the
-file you want, join its parts if it has any, check it, and unpack it if it's
-a disk:
+Files over 2 GiB come in numbered parts (`.part00`, `.part01`, …). To do by
+hand what `download.sh` does, join the parts of the file you want, check it,
+and unpack it if it's a disk:
 
 ```bash
 f=mandara-os-<version>-x86_64.qcow2.zst                               # the file you want

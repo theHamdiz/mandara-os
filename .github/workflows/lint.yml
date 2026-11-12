@@ -21,8 +21,8 @@ jobs:
       - name: Shell scripts
         run: |
           shellcheck --shell=bash build_files/*.sh
-          shellcheck --shell=sh system_files/usr/bin/mandara system_files/usr/libexec/mandara-os/rustup-seed \
-            system_files/etc/profile.d/*.sh
+          shellcheck --shell=sh download.sh system_files/usr/bin/mandara \
+            system_files/usr/libexec/mandara-os/rustup-seed system_files/etc/profile.d/*.sh
 
       - name: TOML files
         run: |

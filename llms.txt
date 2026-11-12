@@ -23,6 +23,7 @@ Key facts:
 - Repository: https://github.com/theHamdiz/mandara-os (author: Ahmad Hamdi, `theHamdiz`).
 - Image: `ghcr.io/thehamdiz/mandara-os:latest` (also `:<mandara version>`), multi-arch, signed with cosign. Switch from another bootc system with `sudo bootc switch ghcr.io/thehamdiz/mandara-os:latest`.
 - Base: Fedora 45; Universal Blue `base-main` on x86_64 (codecs, firmware, ujust), `quay.io/fedora/fedora-bootc` on aarch64.
+- One-line download for the current machine: `curl -fsSL https://raw.githubusercontent.com/theHamdiz/mandara-os/main/download.sh | sh` (installer ISO), or `... | sh -s -- qcow2|vmdk|raw` for a ready-made disk. It detects the architecture, downloads the parts in parallel with resume, joins them, verifies SHA-256 and unpacks.
 - Downloads: GitHub releases named after the Mandara version: `mandara-os-<version>-<arch>.iso`, `.qcow2.zst` (GNOME Boxes, virt-manager, QEMU, Proxmox), `.vmdk.zst` (VirtualBox, VMware), `.raw.zst` (Parallels, UTM, dd), with `SHA256SUMS-<arch>`. Files over 2 GiB come in parts.
 - Requirements: x86_64 needs an x86-64-v3 (AVX2) CPU and Secure Boot off; the bootloader is GRUB (what bootc installs on Fedora).
 - Ready-made disks sign in as `mandara` / `mandara`; the password expires on first boot. The ISO asks for your own account.

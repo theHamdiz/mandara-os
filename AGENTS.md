@@ -46,6 +46,7 @@ A new image is built **only** when Mandara Shell publishes a release.
 | `build_files/build.sh` | Stage 2: COPRs, the kernel swap, packages, Helium's move out of `/opt`, the Rust seed, services, the Plymouth theme, the initramfs, and build-time checks. |
 | `system_files/` | Copied over `/` as is: greetd, MangoWM defaults, `/etc/skel` (shells, git, GTK, Mandara config, wallpapers), sysctl, fontconfig, kargs, tmpfiles, systemd units and drop-ins, the Plymouth theme, the `/usr/bin/mandara` launcher and the ujust recipes. |
 | `disk_config/` | bootc-image-builder settings: `disk.toml` for the qcow2, vmdk and raw disks, `iso.toml` for the installer. |
+| `download.sh` | The README's one-line download: picks the architecture, fetches a release's parts in parallel (resuming), joins them, checks the SHA-256 and unpacks disks. POSIX `sh`, needs `curl` (and `zstd` for disks); all of it runs from `main()` on its last line, so a cut-off `curl \| sh` runs nothing. |
 | `assets/` | The README's emblem and wallpaper previews. |
 | `.github/workflows/build-os.yml` | Builds and publishes the image (only on Mandara's dispatch). |
 | `.github/workflows/build-disks.yml` | Turns the published image into the downloads (called by `build-os.yml`, or run by hand for a version). |
@@ -79,8 +80,8 @@ podman build --platform linux/amd64 --cap-add=SYS_ADMIN \
 podman run --rm -v "$PWD:/mnt:Z" -w /mnt docker.io/koalaman/shellcheck:stable \
   --shell=bash build_files/*.sh
 podman run --rm -v "$PWD:/mnt:Z" -w /mnt docker.io/koalaman/shellcheck:stable \
-  --shell=sh system_files/usr/bin/mandara system_files/usr/libexec/mandara-os/rustup-seed \
-  system_files/etc/profile.d/*.sh
+  --shell=sh download.sh system_files/usr/bin/mandara \
+  system_files/usr/libexec/mandara-os/rustup-seed system_files/etc/profile.d/*.sh
 python3 -c 'import pathlib, tomllib; [tomllib.loads(f.read_text()) for d in ("disk_config", "system_files") for f in pathlib.Path(d).rglob("*.toml")]'
 xmllint --noout system_files/etc/fonts/conf.d/*.conf
 
