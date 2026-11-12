@@ -1,16 +1,17 @@
-# Transparent zstd:1 compression for the whole Btrfs root (compression is a
+# Transparent zstd:1 compression for the whole Btrfs root. Compression is a
 # file-system-wide mount option, so one remount covers /sysroot, /var and
-# /home). Skipped on other file systems.
+# /home. It goes through /var, which is writable: remounting the read-only
+# /sysroot fails with "mount point is busy". Skipped on other file systems.
 [Unit]
 Description=Enable zstd:1 compression on the Btrfs root
 DefaultDependencies=no
 After=local-fs.target
 Before=sysinit.target
-ConditionPathIsMountPoint=/sysroot
+ConditionPathIsMountPoint=/var
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/sh -c 'if [ "$(findmnt -n -o FSTYPE /sysroot)" = btrfs ]; then mount -o remount,compress=zstd:1 /sysroot; fi'
+ExecStart=/usr/bin/sh -c 'if [ "$(findmnt -n -o FSTYPE /var)" = btrfs ]; then mount -o remount,compress=zstd:1 /var; fi'
 RemainAfterExit=yes
 
 [Install]
