@@ -158,7 +158,7 @@ systemctl mask cups.service cups.socket cups.path ModemManager.service \
 	avahi-daemon.service avahi-daemon.socket
 systemctl enable greetd.service NetworkManager.service bluetooth.service \
 	power-profiles-daemon.service fwupd-refresh.timer
-systemctl enable mandara-btrfs-compress.service mandara-expire-default-password.service
+systemctl enable mandara-btrfs-compress.service
 systemctl enable qemu-guest-agent.service spice-vdagentd.socket vmtoolsd.service
 if [ "$TARGETARCH" = amd64 ]; then
 	systemctl enable vboxservice.service

@@ -218,8 +218,8 @@ create your account. The ISO carries the whole system, so it installs
 offline.
 
 **In a virtual machine.** Import the qcow2, vmdk or raw disk and boot it.
-Sign in as **mandara** with the password **mandara**; the first login asks
-you for a new one. Or boot the ISO and install as above.
+Sign in as **mandara** with the password **mandara**, then set your own
+with `passwd`. Or boot the ISO and install as above.
 
 **From another bootc system** (Fedora Atomic, Universal Blue):
 
