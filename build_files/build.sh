@@ -13,6 +13,8 @@ install() {
 install dnf5-plugins
 dnf5 -y copr enable scottames/ghostty
 dnf5 -y copr enable imput/helium
+# Rufin's own COPR: its signed builds for both architectures.
+dnf5 -y copr enable screwyy/rufin
 
 # --- Kernel ----------------------------------------------------------------
 if [ "$TARGETARCH" = amd64 ]; then
@@ -66,9 +68,10 @@ packages=(
 	rsms-inter-vf-fonts jetbrains-mono-fonts-all google-noto-color-emoji-fonts
 	google-noto-sans-fonts google-noto-sans-arabic-fonts google-noto-sans-devanagari-fonts
 	google-noto-sans-bengali-fonts google-noto-sans-telugu-fonts google-noto-sans-cjk-fonts
-	# The four apps. Nautilus extracts and compresses archives itself
-	# (gnome-autoar, libarchive); ouch covers the terminal.
-	ghostty helium-bin nautilus gvfs gvfs-mtp gvfs-smb celluloid
+	# The five apps. Nautilus extracts and compresses archives itself
+	# (gnome-autoar, libarchive); ouch covers the terminal. Celluloid plays
+	# video, Rufin plays music.
+	ghostty helium-bin nautilus gvfs gvfs-mtp gvfs-smb celluloid rufin
 	# Virtual machine guests (each one starts only on its own hypervisor).
 	qemu-guest-agent spice-vdagent open-vm-tools-desktop
 	# Developer toolchain.
@@ -126,6 +129,18 @@ done
 
 # --- Fonts -----------------------------------------------------------------
 fc-cache -f
+
+# --- Default apps ------------------------------------------------------------
+# Music opens in Rufin (Celluloid claims audio types too, and would otherwise
+# win by name): every type Rufin's desktop file lists, in the system defaults
+# /etc/xdg/mimeapps.list, which the XDG spec reads before /usr/share.
+rufin_desktop=io.github.screwys.Rufin.desktop
+{
+	echo "[Default Applications]"
+	sed -n 's/^MimeType=//p' "/usr/share/applications/$rufin_desktop" | tr ';' '\n' |
+		sed -n "s|^\(.\+\)$|\1=$rufin_desktop|p"
+} >/etc/xdg/mimeapps.list
+grep -q "^audio/flac=$rufin_desktop$" /etc/xdg/mimeapps.list
 
 # --- ujust ----------------------------------------------------------------
 # Universal Blue's ujust reads /usr/share/ublue-os/just/60-custom.just; on

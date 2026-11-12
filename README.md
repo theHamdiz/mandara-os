@@ -77,7 +77,7 @@ up with `sudo bootc upgrade`.
 | **What** | A bootable Fedora desktop image: Mandara Shell on MangoWM, with its own login screen, lock screen and boot splash |
 | **Base** | Fedora 45 via [Universal Blue](https://universal-blue.org) `base-main` on x86_64 (codecs, firmware, ujust), Fedora `fedora-bootc` on aarch64 |
 | **Kernel** | CachyOS with LTO, the `scx_lavd` scheduler in performance mode and KSM on x86_64; Fedora's kernel on aarch64 |
-| **Apps** | Ghostty (terminal), Helium (browser), Files (with built-in archive extraction and compression) and Celluloid (media player). That's the list |
+| **Apps** | Ghostty (terminal), Helium (browser), Files (with built-in archive extraction and compression), Celluloid (video) and Rufin (music). That's the list |
 | **Developers** | git, gh, clang/lld/lldb, gcc, cmake, meson, Podman, Docker Engine, and Rust ready offline through rustup |
 | **Terminal** | 23 Rust command-line tools, starship, fish and bash, all wired up |
 | **Downloads** | Installer ISO, plus ready-to-boot qcow2, vmdk and raw disks, for x86_64 and aarch64 |
