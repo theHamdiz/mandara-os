@@ -1,0 +1,53 @@
+# Mandara OS
+
+> Mandara OS is a Linux distribution: a hyper-optimized, bloat-free, image-based Fedora desktop operating system tuned for software development and everyday personal use. It ships as a bootable container image (bootc) for x86_64 and aarch64, with installer ISOs and ready-made qcow2, vmdk and raw disks. Its desktop is Mandara Shell (https://github.com/theHamdiz/mandara), a native Rust Wayland shell, on the MangoWM compositor. A new image is built automatically each time Mandara Shell publishes a release. It is free software under GPL-3.0-or-later.
+
+Mandara OS is a whole operating system, not a theme or a shell installed on top of another desktop. The image decides the kernel, scheduler, system tuning, compositor build, boot chain, developer toolchain and update model.
+
+What it does differently:
+
+- Kernel: on x86_64 the CachyOS kernel built with LTO replaces Fedora's, with the sched-ext `scx_lavd` scheduler in performance mode and same-page merging (KSM) for login sessions. aarch64 uses Fedora's kernel.
+- Latency tuning: kernel arguments `preempt=full`, `threadirqs`, `nowatchdog`, `nmi_watchdog=0`, `zswap.enabled=0` (and `split_lock_detect=off` on x86_64); sysctl with BBR congestion control, the fq queue discipline, `vm.swappiness=10` and a large `vm.max_map_count`.
+- Compiled for the CPU: MangoWM and its scenefx effects library are built from source with clang, `-O3`, ThinLTO and `-fno-plt`, for x86-64-v3 on x86_64 and generic+crypto+crc on aarch64. Mandara Shell is its x86-64-v3 release build on x86_64, verified against the release's SHA256SUMS.
+- Zero bloat: every package is installed without weak dependencies; printing (CUPS), ModemManager and Avahi are masked; virtual-machine guest agents start only on their own hypervisor; Docker Engine is off until enabled.
+- File system: Btrfs on the ready-made disks, with zstd:1 compression switched on at every boot.
+- Desktop: Mandara Shell is the bar, launcher, notifications, lock screen and login screen (Mandara Login on greetd, in the cage kiosk). Mandara Corniche theme, Plymouth boot splash with the Mandara phoenix, Papirus-Dark icons, Bibata Modern Classic cursor, six bundled wallpapers rotating.
+- Apps: exactly three. Ghostty (terminal), Helium (browser) and Nautilus (files).
+- Developer toolchain: git, git-lfs, gh, clang, lld, lldb, gcc, cmake, meson, ninja, make, perf, bpftool, strace; Podman (rootless Docker-compatible socket on), podman-compose, buildah, skopeo; Docker Engine with buildx and compose; Rust via rustup with a stable toolchain (clippy, rustfmt, rust-analyzer, rust-src) seeded into `~/.rustup` and `~/.cargo` on first use, so it works offline and stays updatable.
+- Terminal tools (22, Rust): ripgrep, bat, fd, starship, helix, delta, zoxide, hyperfine, yazi, zellij, atuin, just, gitui, eza, tokei, bottom, bandwhich, dust, procs, sd, xh, cargo-nextest; plus fish and bash with starship, zoxide and atuin set up.
+- Typography: Inter, JetBrains Mono, Alexandria and Cairo (Latin and Arabic as equals), Noto for every other script, colour emoji.
+- Updates: `sudo bootc upgrade` fetches a new image, applied at the next boot; `sudo bootc rollback` returns to the previous one. Mandara Shell updates itself in place without root (Studio → About → Update now) and falls back to the image's version if an update fails to start.
+
+Key facts:
+
+- Repository: https://github.com/theHamdiz/mandara-os (author: Ahmad Hamdi, `theHamdiz`).
+- Image: `ghcr.io/thehamdiz/mandara-os:latest` (also `:<mandara version>`), multi-arch, signed with cosign. Switch from another bootc system with `sudo bootc switch ghcr.io/thehamdiz/mandara-os:latest`.
+- Base: Fedora 45; Universal Blue `base-main` on x86_64 (codecs, firmware, ujust), `quay.io/fedora/fedora-bootc` on aarch64.
+- Downloads: GitHub releases named after the Mandara version: `mandara-os-<version>-<arch>.iso`, `.qcow2.zst` (GNOME Boxes, virt-manager, QEMU, Proxmox), `.vmdk.zst` (VirtualBox, VMware), `.raw.zst` (Parallels, UTM, dd), with `SHA256SUMS-<arch>`. Files over 2 GiB come in parts.
+- Requirements: x86_64 needs an x86-64-v3 (AVX2) CPU and Secure Boot off; the bootloader is GRUB (what bootc installs on Fedora).
+- Ready-made disks sign in as `mandara` / `mandara`; the password expires on first boot. The ISO asks for your own account.
+- Build pipeline: Mandara's release workflow sends a `mandara-shell-updated` repository_dispatch with the version; `build-os.yml` builds both architectures natively, publishes and signs; `build-disks.yml` makes the downloads with bootc-image-builder. Nothing else builds the image.
+
+## Docs
+
+- [README](https://github.com/theHamdiz/mandara-os/blob/main/README.md): what Mandara OS is, downloads, install, everyday commands, questions
+- [AGENTS.md](https://github.com/theHamdiz/mandara-os/blob/main/AGENTS.md): repository map, build and checks, rules, how to add packages, tools, settings, units and kernel arguments
+- [Containerfile](https://github.com/theHamdiz/mandara-os/blob/main/Containerfile): the two-stage image build
+- [build_files/build.sh](https://github.com/theHamdiz/mandara-os/blob/main/build_files/build.sh): kernel swap, packages, services, initramfs
+- [build_files/builder.sh](https://github.com/theHamdiz/mandara-os/blob/main/build_files/builder.sh): MangoWM and scenefx builds, Mandara and tool downloads
+- [build-os.yml](https://github.com/theHamdiz/mandara-os/blob/main/.github/workflows/build-os.yml) and [build-disks.yml](https://github.com/theHamdiz/mandara-os/blob/main/.github/workflows/build-disks.yml): the release-driven pipeline
+- [Releases](https://github.com/theHamdiz/mandara-os/releases): ISOs and disk images
+
+## Mandara Shell
+
+- [Mandara Shell repository](https://github.com/theHamdiz/mandara): the desktop shell Mandara OS is built around
+- [Mandara Shell llms.txt](https://github.com/theHamdiz/mandara/blob/main/llms.txt): the shell's own summary for language models
+- [Mandara website](https://thehamdiz.github.io/mandara/)
+- [Mandara documentation](https://github.com/theHamdiz/mandara/blob/main/docs/README.md)
+
+## Optional
+
+- [CITATION.cff](https://github.com/theHamdiz/mandara-os/blob/main/CITATION.cff): how to cite Mandara OS
+- [MangoWM](https://github.com/mangowm/mango): the Wayland compositor
+- [bootc](https://bootc-dev.github.io/bootc/): image-based updates
+- [Universal Blue](https://universal-blue.org): the x86_64 base image

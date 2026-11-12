@@ -44,17 +44,20 @@
   <a href="#living-with-it">Living with it</a> ·
   <a href="#common-questions">Questions</a> ·
   <a href="#how-its-built">How it's built</a> ·
-  <a href="https://github.com/theHamdiz/mandara">Mandara Shell</a>
+  <a href="AGENTS.md">Contributing</a> ·
+  <a href="https://github.com/theHamdiz/mandara"><b>Mandara Shell</b></a>
 </p>
 
 ---
 
-**Mandara OS** is a complete Linux desktop with one idea behind it: start
-from a clean, fast Fedora base, put [Mandara Shell](https://github.com/theHamdiz/mandara)
-and [MangoWM](https://github.com/mangowm/mango) on top, tune everything for
-low latency, and leave out everything else. No second desktop hiding
-underneath, no pile of preinstalled apps, no background services idling
-away your memory.
+**Mandara OS** is a Linux distribution: a hyper-optimized, bloat-free,
+image-based Fedora desktop for software development and everyday personal
+use, for x86_64 and aarch64. It starts from a clean Fedora base, swaps in a
+low-latency kernel and scheduler, compiles its compositor for your CPU, and
+puts [Mandara Shell](https://github.com/theHamdiz/mandara) on
+[MangoWM](https://github.com/mangowm/mango) as the desktop. Everything else
+is left out: no second desktop hiding underneath, no pile of preinstalled
+apps, no background services idling away your memory.
 
 It ships as a **bootable container image** ([bootc](https://bootc-dev.github.io/bootc/)).
 Your system is one versioned image: an update is downloaded whole, applied at
@@ -79,6 +82,21 @@ up with `sudo bootc upgrade`.
 | **Downloads** | Installer ISO, plus ready-to-boot qcow2, vmdk and raw disks, for x86_64 and aarch64 |
 | **Updates** | `sudo bootc upgrade` for the system; Studio → About → **Update now** for Mandara, without root |
 | **License** | GPL-3.0-or-later |
+
+## More than a shell on a distro
+
+You can install [Mandara Shell](https://github.com/theHamdiz/mandara) on
+almost any Linux distribution, and that gives you the Mandara desktop.
+Mandara OS is the whole machine around it, tuned as one piece:
+
+| Layer | Mandara Shell on your distribution | Mandara OS |
+|---|---|---|
+| **Desktop** | Mandara on your compositor | Mandara on MangoWM, with Mandara Login, the lock screen and the boot splash |
+| **Kernel** | Your distribution's | CachyOS LTO with `scx_lavd` and KSM (x86_64) |
+| **System tuning** | Your distribution's | Low-latency kernel arguments, BBR, Btrfs with zstd, masked idle services |
+| **Compositor** | Your distribution's package | MangoWM and scenefx compiled with ThinLTO for your CPU |
+| **Developer tools** | Whatever you install | C/C++, Rust, Podman, Docker and 22 Rust command-line tools, ready |
+| **Updates** | Your package manager | Atomic image updates with one-command rollback |
 
 ## What sets it apart
 
@@ -162,10 +180,10 @@ file you want, join its parts if it has any, check it, and unpack it if it's
 a disk:
 
 ```bash
-f=mandara-os-<version>-x86_64.qcow2.zst            # the file you want
-[ -e "$f" ] || cat "$f".part* > "$f"               # only when it came in parts
-grep "  $f\$" SHA256SUMS-x86_64 | sha256sum -c -   # fails if it's missing or wrong
-zstd -d "$f"                                       # disks only, not the ISO
+f=mandara-os-<version>-x86_64.qcow2.zst                               # the file you want
+[ -e "$f" ] || { cat "$f".part* > "$f.tmp" && mv "$f.tmp" "$f"; }     # only when it came in parts
+grep "  $f\$" SHA256SUMS-x86_64 | sha256sum -c - &&                   # stops if it's missing or wrong
+  zstd -d "$f"                                                        # disks only, not the ISO
 ```
 
 ## Install
@@ -211,6 +229,20 @@ to remember: **Super+Return** a terminal, **Super+Space** the launcher,
 **Super+E** files, **Super+B** the browser, **Super+L** lock.
 
 ## Common questions
+
+**What is Mandara OS?** A Linux distribution: an image-based Fedora
+desktop operating system tuned for development and personal use, with the
+CachyOS kernel, sched-ext, Btrfs and a ready developer toolchain, and Mandara
+Shell on MangoWM as its desktop.
+
+**Is it just Mandara Shell installed on Fedora?** No. Mandara OS replaces
+the kernel and scheduler, tunes the system, compiles its own compositor,
+sets up the login, boot and update chain, and ships a developer toolchain.
+[Mandara Shell](https://github.com/theHamdiz/mandara) is the desktop part,
+and it also runs on other distributions on its own.
+
+**Who is it for?** Developers who want a fast, quiet, ready-to-work
+machine, and anyone who wants Mandara with no setup at all.
 
 **Can I install other apps?** Yes. Flatpak (built in on x86_64),
 `cargo install`, AppImages and anything in `/opt` or `/usr/local` work as
@@ -276,6 +308,22 @@ On aarch64, use `--platform linux/arm64` and
    **public**, so `bootc` can pull it without signing in.
 
 </details>
+
+## Learn more
+
+- **[Mandara Shell](https://github.com/theHamdiz/mandara)**: the desktop
+  this system is built around, with its
+  [website](https://thehamdiz.github.io/mandara/),
+  [documentation](https://github.com/theHamdiz/mandara/blob/main/docs/README.md)
+  and [install guide](https://github.com/theHamdiz/mandara/blob/main/docs/install.md)
+  for other distributions
+- **[AGENTS.md](AGENTS.md)**: how the image is built, the rules and how to
+  contribute, for people and AI coding agents
+- **[llms.txt](llms.txt)**: a summary of Mandara OS for language models
+- **[CITATION.cff](CITATION.cff)**: how to cite Mandara OS
+- **[MangoWM](https://github.com/mangowm/mango)**,
+  **[bootc](https://bootc-dev.github.io/bootc/)** and
+  **[Universal Blue](https://universal-blue.org)**: the projects it builds on
 
 ## Star history
 
