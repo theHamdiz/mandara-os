@@ -218,5 +218,10 @@ find /var/cache -mindepth 1 -maxdepth 1 ! -name libdnf5 -exec rm -rf {} +
 rm -rf /var/log/* /var/lib/dnf /tmp/* /root/.cache
 # tmpfiles creates these package-owned folders and the greeter's portal mask
 # on the installed system. Kernel RPM transaction state is build-only.
+if [ -e /usr/lib/tmpfiles.d/rpm-ostree-autovar.conf ]; then
+	# Universal Blue already supplies these defaults; avoid duplicate entries.
+	rm /usr/lib/tmpfiles.d/mandara-fedora-state.conf
+fi
 rm -rf /var/lib/greetd/.config /var/lib/openvpn /var/lib/power-profiles-daemon /var/lib/rpm-state
+rm -rf /var/lib/AccountsService /var/lib/bluetooth /var/lib/geoclue /var/lib/plymouth /var/spool/plymouth
 rm -rf /run/dnf /run/openvpn-client /run/openvpn-server /run/selinux-policy

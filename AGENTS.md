@@ -195,6 +195,8 @@ call `sudo` themselves.
   the greeter's portal mask and package state directories through tmpfiles.
   Remove their package-created copies, kernel RPM transaction state and
   build-only `/run` content before the final warning-fatal bootc lint.
+  Fedora bootc also needs `mandara-fedora-state.conf`; Universal Blue already
+  has these entries in `rpm-ostree-autovar.conf`, so drop the extra file there.
 - **One Fedora release everywhere.** `FEDORA_VERSION` must match between the
   builder and the base image: MangoWM links against the builder's wlroots
   and scenefx.
