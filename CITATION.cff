@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you refer to Mandara OS in your work, please cite it like this."
+title: "Mandara OS"
+abstract: >-
+  Mandara OS is a hyper-optimized, bloat-free Linux distribution: an
+  image-based Fedora desktop operating system tuned for software development
+  and everyday personal use, published as a bootable container image (bootc)
+  for x86_64 and aarch64 with installer ISOs and ready-made virtual machine
+  disks. On x86_64 it runs the CachyOS LTO kernel with the sched-ext scx_lavd
+  scheduler; it builds the MangoWM compositor from source with ThinLTO and
+  CPU-specific flags, uses Btrfs with zstd compression, installs no weak
+  dependencies, and ships a ready Rust and container toolchain. Its desktop
+  is Mandara Shell, and a new image is built automatically for every Mandara
+  Shell release.
+type: software
+authors:
+  - given-names: Ahmad
+    family-names: Hamdi
+    alias: theHamdiz
+repository-code: "https://github.com/theHamdiz/mandara-os"
+repository-artifact: "https://github.com/theHamdiz/mandara-os/releases"
+license: GPL-3.0-or-later
+keywords:
+  - linux distribution
+  - fedora
+  - bootc
+  - immutable operating system
+  - container image
+  - cachyos kernel
+  - sched-ext
+  - scx_lavd
+  - btrfs
+  - wayland
+  - mangowm
+  - mandara shell
+  - developer workstation
+  - rust
+  - low latency
+references:
+  - type: software
+    title: "Mandara Shell"
+    authors:
+      - given-names: Ahmad
+        family-names: Hamdi
+        alias: theHamdiz
+    repository-code: "https://github.com/theHamdiz/mandara"
+    url: "https://thehamdiz.github.io/mandara/"
+    license: GPL-3.0-or-later
