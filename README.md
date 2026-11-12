@@ -108,6 +108,8 @@ Mandara OS is the whole machine around it, tuned as one piece:
    The system identifies itself as **Mandara OS**, with the Mandara release
    version, logo and support links. GRUB lists Mandara OS deployments; fresh
    installs give you five seconds to choose one, with a cyan highlight.
+   Routine boot and login output stays off the screen; kernel errors and
+   failed services remain visible, and graphical-session logs go to the journal.
 
 2. **A kernel tuned for latency.** On x86_64 the CachyOS kernel (built with
    LTO) replaces Fedora's, with sched-ext's `scx_lavd` scheduler in
@@ -258,6 +260,15 @@ identity is in `NAME`, `PRETTY_NAME`, `IMAGE_ID` and `IMAGE_VERSION`.
 | `ujust mandara-reset-shell` | Go back to the Mandara version that came with the image |
 | `ujust mandara-enable-docker` | Turn on Docker Engine (`podman` instead points `docker` at rootless Podman) |
 | `ujust mandara-unlock-os` | Make `/usr` writable until the next reboot, for quick experiments |
+
+Boot normally shows the splash and login screen. To inspect diagnostics,
+use `journalctl -b` for the current boot, `journalctl -b -u greetd` for the
+login daemon, `journalctl -b -t mandara-greeter` for the graphical login
+screen, and `journalctl -b -t mandara-session` for MangoWM and the desktop.
+Use `sudo` if your account cannot read the system journal. For one verbose
+boot, edit the GRUB entry with **e**, remove `quiet`, and change
+`systemd.show_status=error` to `systemd.show_status=yes` and `loglevel=4`
+to `loglevel=7`. This affects that boot only.
 
 Mandara updates itself as usual: **Studio → About → Update now**. Shortcuts
 to remember: **Super+Return** a terminal, **Super+Space** the launcher,

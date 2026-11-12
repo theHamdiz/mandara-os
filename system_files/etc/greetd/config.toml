@@ -1,9 +1,9 @@
 # Mandara OS: greetd runs Mandara Login (the Mandara binary's greeter) in the
-# cage kiosk, the same command `mandara greeter install` writes. It lists the
-# sessions in /usr/share/wayland-sessions, MangoWM first.
+# cage kiosk. Send its output to the journal because greetd attaches its
+# children to the login VT. Sessions come from /usr/share/wayland-sessions.
 [terminal]
 vt = 1
 
 [default_session]
-command = "cage -s -m last -- /usr/lib/mandara/mandara-bin greeter"
+command = "/usr/bin/systemd-cat --identifier=mandara-greeter /usr/bin/cage -s -m last -- /usr/lib/mandara/mandara-bin greeter"
 user = "greetd"
