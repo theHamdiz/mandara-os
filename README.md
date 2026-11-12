@@ -47,8 +47,8 @@ the Mandara version it's built around, and has these files for `x86_64` and
 
 Files over 2 GiB come in parts: join them with
 `cat <file>.part* > <file>`. Decompress disks with `zstd -d`. The ready-made
-disks sign in as **mandara** with the password **mandara**. Change it with
-`passwd`. The ISO asks for your own account.
+disks sign in as **mandara** with the password **mandara**, and the first
+login asks you to choose a new one. The ISO asks for your own account.
 
 Already on a bootc system (Fedora Atomic, Universal Blue)? Switch to it:
 

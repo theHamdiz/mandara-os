@@ -5,22 +5,30 @@
 #   mandara-os-<version>-<arch>.raw.zst    Parallels, UTM, or dd to a disk
 # and attaches them to the GitHub release v<version> of this repository.
 #
-# It runs after "Build OS image" succeeds (which itself only runs when a
-# Mandara release asks for it), or by hand for the current :latest image.
+# build-os.yml calls it with the exact image it just published (version and
+# digest). Run it by hand to rebuild the downloads of a published version.
 name: Build disk images
 
 on:
-  workflow_run:
-    workflows: [Build OS image]
-    types: [completed]
+  workflow_call:
+    inputs:
+      version:
+        description: Mandara version the image is built around
+        type: string
+        required: true
+      digest:
+        description: Digest of the multi-arch image to use
+        type: string
+        required: true
   workflow_dispatch:
+    inputs:
+      version:
+        description: Mandara version of a published image (e.g. 0.28.0)
+        type: string
+        required: true
 
 permissions:
   contents: read
-
-concurrency:
-  group: build-disks
-  cancel-in-progress: false
 
 env:
   IMAGE: ghcr.io/thehamdiz/mandara-os
@@ -31,7 +39,6 @@ env:
 jobs:
   disks:
     name: Disks (${{ matrix.arch }})
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     strategy:
       fail-fast: false
       matrix:
@@ -49,6 +56,8 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
       PLATFORM: ${{ matrix.platform }}
+      VERSION: ${{ inputs.version }}
+      DIGEST: ${{ inputs.digest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -69,21 +78,26 @@ jobs:
           if [ "${#missing[@]}" -gt 0 ]; then sudo apt-get update -q && sudo apt-get install -yq "${missing[@]}"; fi
 
       - name: Pull the image
-        id: image
         env:
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          echo "$REGISTRY_TOKEN" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
-          # Installed systems follow :latest, so `bootc upgrade` brings each
-          # new Mandara release.
-          sudo podman pull --platform "$PLATFORM" "$IMAGE:latest"
-          version=$(sudo podman image inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$IMAGE:latest")
-          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::the image has no Mandara version label (got '$version')"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version must look like 0.28.0 (got '$VERSION')"
             exit 1
           fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "$REGISTRY_TOKEN" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          # The exact image: its digest when build-os.yml calls, else its version tag.
+          if [ -n "$DIGEST" ]; then ref="$IMAGE@$DIGEST"; else ref="$IMAGE:$VERSION"; fi
+          sudo podman pull --platform "$PLATFORM" "$ref"
+          label=$(sudo podman image inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$ref")
+          if [ "$label" != "$VERSION" ]; then
+            echo "::error::$ref is Mandara '$label', not $VERSION"
+            exit 1
+          fi
+          # Installed systems follow :latest so `bootc upgrade` brings each new
+          # release; the tag only names this exact image locally.
+          sudo podman tag "$ref" "$IMAGE:latest"
 
       - name: Virtual machine disks (qcow2, vmdk, raw)
         run: |
@@ -110,8 +124,6 @@ jobs:
             "$IMAGE:latest"
 
       - name: Package
-        env:
-          VERSION: ${{ steps.image.outputs.version }}
         run: |
           set -euo pipefail
           name="mandara-os-$VERSION-$ARCH"
@@ -134,7 +146,7 @@ jobs:
       - name: Upload to the release
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.image.outputs.version }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           tag="v$VERSION"
@@ -142,8 +154,20 @@ jobs:
 
           Files over 2 GiB come in parts: join them first, e.g. \`cat mandara-os-$VERSION-x86_64.iso.part* > mandara-os-$VERSION-x86_64.iso\`, then check them against \`SHA256SUMS-<arch>\`. Decompress \`.zst\` disks with \`zstd -d\`.
 
-          The ready-made disks sign in as **mandara** / **mandara**: change the password with \`passwd\` after the first login."
-          gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1 ||
-            gh release create "$tag" --repo "${{ github.repository }}" --title "Mandara OS $VERSION" --notes "$notes" ||
-            gh release view "$tag" --repo "${{ github.repository }}" >/dev/null
-          gh release upload "$tag" dist/* --repo "${{ github.repository }}" --clobber
+          The ready-made disks sign in as **mandara** / **mandara** and ask for a new password at the first login. The ISO asks for your own account."
+          gh release view "$tag" --repo "$REPO" >/dev/null 2>&1 ||
+            gh release create "$tag" --repo "$REPO" --title "Mandara OS $VERSION" --notes "$notes" ||
+            gh release view "$tag" --repo "$REPO" >/dev/null
+          # A rerun may make fewer parts: drop this architecture's old files
+          # that this run doesn't replace (the other architecture's stay).
+          gh release view "$tag" --repo "$REPO" --json assets -q '.assets[].name' |
+            while read -r asset; do
+              case "$asset" in
+              "mandara-os-$VERSION-$ARCH."* | "SHA256SUMS-$ARCH")
+                if [ ! -e "dist/$asset" ]; then
+                  gh release delete-asset "$tag" "$asset" --repo "$REPO" --yes
+                fi
+                ;;
+              esac
+            done
+          gh release upload "$tag" dist/* --repo "$REPO" --clobber

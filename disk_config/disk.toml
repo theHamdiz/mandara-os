@@ -2,8 +2,9 @@
 # Built with --rootfs btrfs; zstd:1 compression is switched on at boot by
 # mandara-btrfs-compress.service.
 
-# The account the virtual machine images start with. Change its password
-# after the first login (passwd).
+# The account the ready-made disks start with. Its password is public, so
+# mandara-expire-default-password.service expires it on the first boot and
+# the first login asks for a new one.
 [[customizations.user]]
 name = "mandara"
 password = "mandara"
