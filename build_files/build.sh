@@ -183,6 +183,14 @@ ujust --list | grep -q mandara-reset-shell
 for repo in /etc/yum.repos.d/_copr*.repo; do
 	sed -i 's/^enabled=1/enabled=0/' "$repo"
 done
+# Fedora 45 keeps its repositories in /usr/share/dnf5/repos.d, but
+# bootc-image-builder's installer ISO only reads /etc/yum.repos.d. A copy
+# with the same name there is what dnf5 reads instead (no duplicates).
+for repo in /usr/share/dnf5/repos.d/*.repo; do
+	if [ ! -e "/etc/yum.repos.d/${repo##*/}" ]; then
+		cp "$repo" /etc/yum.repos.d/
+	fi
+done
 # /var/cache/libdnf5 is the build's package cache mount; the rest goes.
 find /var/cache -mindepth 1 -maxdepth 1 ! -name libdnf5 -exec rm -rf {} +
 rm -rf /var/log/* /var/lib/dnf /tmp/* /root/.cache
