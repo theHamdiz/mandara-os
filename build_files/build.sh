@@ -66,8 +66,9 @@ packages=(
 	rsms-inter-vf-fonts jetbrains-mono-fonts-all google-noto-color-emoji-fonts
 	google-noto-sans-fonts google-noto-sans-arabic-fonts google-noto-sans-devanagari-fonts
 	google-noto-sans-bengali-fonts google-noto-sans-telugu-fonts google-noto-sans-cjk-fonts
-	# The three apps.
-	ghostty helium-bin nautilus gvfs gvfs-mtp gvfs-smb
+	# The four apps. Nautilus extracts and compresses archives itself
+	# (gnome-autoar, libarchive); ouch covers the terminal.
+	ghostty helium-bin nautilus gvfs gvfs-mtp gvfs-smb celluloid
 	# Virtual machine guests (each one starts only on its own hypervisor).
 	qemu-guest-agent spice-vdagent open-vm-tools-desktop
 	# Developer toolchain.
@@ -81,6 +82,11 @@ packages=(
 )
 if [ "$TARGETARCH" = amd64 ]; then
 	packages+=(virtualbox-guest-additions)
+else
+	# Universal Blue's full ffmpeg (x86_64) decodes H.264 itself. Fedora's
+	# ffmpeg-free (aarch64) only decodes it through OpenH264: ask for Cisco's
+	# real library so the noopenh264 stub isn't picked for Celluloid's mpv.
+	packages+=(openh264)
 fi
 
 # Helium installs into /opt, which bootc keeps in /var: install it into a real

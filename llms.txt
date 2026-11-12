@@ -12,9 +12,9 @@ What it does differently:
 - Zero bloat: every package is installed without weak dependencies; printing (CUPS), ModemManager and Avahi are masked; virtual-machine guest agents start only on their own hypervisor; Docker Engine is off until enabled.
 - File system: Btrfs on the ready-made disks, with zstd:1 compression switched on at every boot.
 - Desktop: Mandara Shell is the bar, launcher, notifications, lock screen and login screen (Mandara Login on greetd, in the cage kiosk). Mandara Corniche theme, Plymouth boot splash with the Mandara phoenix, Papirus-Dark icons, Bibata Modern Classic cursor, six bundled wallpapers rotating.
-- Apps: exactly three. Ghostty (terminal), Helium (browser) and Nautilus (files).
+- Apps: exactly four. Ghostty (terminal), Helium (browser), Nautilus (files, with built-in archive extraction and compression through gnome-autoar/libarchive) and Celluloid (media player, on mpv).
 - Developer toolchain: git, git-lfs, gh, clang, lld, lldb, gcc, cmake, meson, ninja, make, perf, bpftool, strace; Podman (rootless Docker-compatible socket on), podman-compose, buildah, skopeo; Docker Engine with buildx and compose; Rust via rustup with a stable toolchain (clippy, rustfmt, rust-analyzer, rust-src) seeded into `~/.rustup` and `~/.cargo` on first use, so it works offline and stays updatable.
-- Terminal tools (22, Rust): ripgrep, bat, fd, starship, helix, delta, zoxide, hyperfine, yazi, zellij, atuin, just, gitui, eza, tokei, bottom, bandwhich, dust, procs, sd, xh, cargo-nextest; plus fish and bash with starship, zoxide and atuin set up.
+- Terminal tools (23, Rust): ripgrep, bat, fd, starship, helix, delta, zoxide, hyperfine, yazi, zellij, atuin, just, gitui, eza, tokei, bottom, bandwhich, dust, procs, sd, xh, ouch (archives), cargo-nextest; plus fish and bash with starship, zoxide and atuin set up.
 - Typography: Inter, JetBrains Mono, Alexandria and Cairo (Latin and Arabic as equals), Noto for every other script, colour emoji.
 - Updates: `sudo bootc upgrade` fetches a new image, applied at the next boot; `sudo bootc rollback` returns to the previous one. Mandara Shell updates itself in place without root (Studio → About → Update now) and falls back to the image's version if an update fails to start.
 
