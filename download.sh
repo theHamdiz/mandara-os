@@ -6,13 +6,7 @@
 #   curl -fsSL https://raw.githubusercontent.com/theHamdiz/mandara-os/main/download.sh | sh
 #   curl -fsSL https://raw.githubusercontent.com/theHamdiz/mandara-os/main/download.sh | sh -s -- qcow2
 #
-# Usage: download.sh [iso|qcow2|vmdk|raw] [--arch x86_64|aarch64]
-#                    [--version X.Y.Z] [--dir DIR] [--jobs N] [--keep] [--list]
-#
-#   iso    installer for a USB stick or any virtual machine (default)
-#   qcow2  GNOME Boxes, virt-manager, QEMU/KVM, Proxmox
-#   vmdk   VirtualBox, VMware
-#   raw    Parallels, UTM, or writing straight to a disk
+# Options: download.sh --help.
 #
 # Everything runs from main(), called on the last line, so a download that is
 # cut short runs nothing.
@@ -29,8 +23,22 @@ die() {
 need() { command -v "$1" >/dev/null 2>&1 || die "$1 is needed: $2"; }
 
 usage() {
-	sed -n '9,16p' "$0" 2>/dev/null | sed 's/^# \{0,1\}//' ||
-		say "Usage: download.sh [iso|qcow2|vmdk|raw] [--arch x86_64|aarch64] [--version X.Y.Z] [--dir DIR] [--jobs N] [--keep] [--list]"
+	cat <<'EOF'
+Usage: download.sh [iso|qcow2|vmdk|raw] [--arch x86_64|aarch64]
+                   [--version X.Y.Z] [--dir DIR] [--jobs N] [--keep] [--list]
+
+  iso    installer for a USB stick or any virtual machine (default)
+  qcow2  GNOME Boxes, virt-manager, QEMU/KVM, Proxmox
+  vmdk   VirtualBox, VMware
+  raw    Parallels, UTM, or writing straight to a disk
+
+  --arch     x86_64 or aarch64 (default: this machine)
+  --version  a Mandara OS release, e.g. 0.28.0 (default: the newest)
+  --dir      where to put it (default: the current folder)
+  --jobs     parts downloaded at once (default: 4)
+  --keep     keep the downloaded parts and the compressed disk
+  --list     only show what would be downloaded
+EOF
 }
 
 # The release's architecture name for this machine.
@@ -150,16 +158,24 @@ main() {
 		grep "  $file\$" "SHA256SUMS-$arch" | sha256_check >/dev/null || die "$file doesn't match its checksum; delete it and run again"
 		case "$file" in
 		*.zst)
-			need zstd "to unpack the disk image"
-			say "Unpacking ${file%.zst}"
-			zstd -q -d -f "$file" -o "${file%.zst}"
-			$keep || rm -f "$file"
-			file=${file%.zst}
-			# Give the image's empty space back (a raw disk drops from about
-			# 42 GiB to 7 GiB on disk); skipped where fallocate isn't there.
-			if command -v fallocate >/dev/null 2>&1; then
-				fallocate -d "$file" 2>/dev/null || true
+			disk=${file%.zst}
+			if [ -e "$disk" ]; then
+				# Never unpack over a disk that may be in use already.
+				say "$disk is already unpacked; leaving it as it is."
+			else
+				need zstd "to unpack the disk image"
+				say "Unpacking $disk"
+				# Through a temporary file: an interrupted unpack is redone.
+				zstd -q -d -f "$file" -o "$disk.tmp"
+				# Give the image's empty space back (a raw disk drops from
+				# about 42 GiB to 7 GiB on disk); skipped without fallocate.
+				if command -v fallocate >/dev/null 2>&1; then
+					fallocate -d "$disk.tmp" 2>/dev/null || true
+				fi
+				mv "$disk.tmp" "$disk"
 			fi
+			$keep || rm -f "$file"
+			file=$disk
 			;;
 		esac
 	fi
