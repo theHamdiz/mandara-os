@@ -17,6 +17,7 @@ What it does differently:
 - Terminal tools (23, Rust): ripgrep, bat, fd, starship, helix, delta, zoxide, hyperfine, yazi, zellij, atuin, just, gitui, eza, tokei, bottom, bandwhich, dust, procs, sd, xh, ouch (archives), cargo-nextest; plus fish and bash with starship, zoxide and atuin set up.
 - Typography: Alexandria is the default for Latin and Arabic in the OS, GTK, Mandara and the login screen; Cairo and Inter are fallbacks, JetBrains Mono is for code, Noto covers other scripts, with colour emoji.
 - OS identity: Mandara OS and the Mandara release version in os-release, the Mandara logo and support links, Mandara release banners and firmware boot-entry name. Fedora's machine-readable ID and base VERSION_ID remain for compatibility. GRUB has a five-second menu with a cyan highlight; installer ISO labels start with Mandara-OS.
+- Quiet boot: routine boot progress is hidden, while kernel errors and failed services remain visible. The graphical greeter and MangoWM desktop send stdout/stderr to the journal under mandara-greeter and mandara-session instead of the login VT; logs and failure exit codes are preserved.
 - Updates: `sudo bootc upgrade` fetches a new image, applied at the next boot; `sudo bootc rollback` returns to the previous one. Mandara Shell updates itself in place without root (Studio → About → Update now) and falls back to the image's version if an update fails to start.
 
 Key facts:

@@ -89,6 +89,10 @@ python3 -c 'import pathlib, tomllib; [tomllib.loads(f.read_text()) for d in ("di
 xmllint --noout system_files/etc/fonts/conf.d/*.conf
 python3 -m unittest discover -s tests -v
 
+# Session logging integration, in a locally built disposable image.
+podman run --rm -v "$PWD:/repo:ro,Z" -w /repo --entrypoint /usr/bin/python3 \
+  localhost/mandara-os tests/integration/session_logging.py
+
 # Also worth running on workflow changes (not in CI).
 podman run --rm -v "$PWD:/repo:Z" -w /repo docker.io/rhysd/actionlint:latest
 
@@ -224,6 +228,18 @@ call `sudo` themselves.
   `Conflicts=plymouth-quit.service` on greetd deadlocks the boot. The splash
   stays up into the login screen through `plymouth quit --retain-splash`
   (a drop-in on `plymouth-quit.service`).
+- **Keep the boot quiet without discarding diagnostics.** Boot verbosity is
+  separate from performance tuning in `12-mandara-quiet-boot.toml`.
+  `systemd.show_status=error` shows failures without switching to routine
+  progress during a slow boot. The kernel prints levels strictly below
+  `loglevel`, so use 4 to include errors (level 3). Do not disable error
+  status or redirect graphical-session output to `/dev/null`.
+- **greetd attaches session output to its VT.** A service-level journal
+  setting does not redirect the session's own stdout/stderr. The greeter
+  command and Mango session entry use `systemd-cat` to retain both streams
+  under `mandara-greeter` and `mandara-session`. It execs the child, keeping
+  stdin, environment, PID and exit status. The container-only integration
+  test checks these properties against a private journal stream peer.
 - **Btrfs options go through `/var`.** On bootc `/sysroot` is mounted
   read-only, and remounting it fails with "mount point is busy"; `/var` is a
   writable mount of the same file system, so file-system-wide options such

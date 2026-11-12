@@ -1,0 +1,3 @@
+# Show failures instead of routine boot progress, including during slow boots.
+# The kernel prints levels below this threshold: 4 includes KERN_ERR (3).
+kargs = ["quiet", "splash", "loglevel=4", "systemd.show_status=error", "rd.udev.log_level=3"]

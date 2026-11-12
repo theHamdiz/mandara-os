@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Mango
+DesktopNames=mango;wlroots
+Comment=MangoWM with Mandara Shell
+Exec=/usr/bin/systemd-cat --identifier=mandara-session /usr/bin/mango
+TryExec=/usr/bin/mango
+Icon=mango
+Type=Application
