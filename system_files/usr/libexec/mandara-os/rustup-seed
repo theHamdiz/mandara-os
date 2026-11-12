@@ -1,0 +1,21 @@
+#!/usr/bin/sh
+# Gives this account its own Rust toolchain on first use: a copy of the
+# stable toolchain baked into the image, so rustc and cargo work offline
+# right away and rustup can update or add toolchains in ~/.rustup.
+seed=/usr/share/rustup-seed
+[ -n "$HOME" ] && [ -w "$HOME" ] || exit 0
+[ -e "$HOME/.rustup" ] && [ -e "$HOME/.cargo" ] && exit 0
+if [ ! -e "$HOME/.rustup" ]; then
+	tmp="$HOME/.rustup.seeding.$$"
+	if ! { cp -a "$seed/rustup" "$tmp" && mv -T "$tmp" "$HOME/.rustup"; }; then
+		rm -rf "$tmp"
+		exit 1
+	fi
+fi
+if [ ! -e "$HOME/.cargo" ]; then
+	tmp="$HOME/.cargo.seeding.$$"
+	if ! { cp -a "$seed/cargo" "$tmp" && mv -T "$tmp" "$HOME/.cargo"; }; then
+		rm -rf "$tmp"
+		exit 1
+	fi
+fi

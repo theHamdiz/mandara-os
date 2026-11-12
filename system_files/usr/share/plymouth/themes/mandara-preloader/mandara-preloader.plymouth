@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Mandara Preloader
+Description=The Mandara emblem on Corniche night blue with a sea-glass spinner
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/mandara-preloader
+ScriptFile=/usr/share/plymouth/themes/mandara-preloader/mandara-preloader.script

@@ -1,0 +1,14 @@
+# bootc-image-builder settings for the ready-to-boot disks (qcow2, vmdk, raw).
+# Built with --rootfs btrfs; zstd:1 compression is switched on at boot by
+# mandara-btrfs-compress.service.
+
+# The account the virtual machine images start with. Change its password
+# after the first login (passwd).
+[[customizations.user]]
+name = "mandara"
+password = "mandara"
+groups = ["wheel"]
+
+[[customizations.filesystem]]
+mountpoint = "/"
+minsize = "40 GiB"

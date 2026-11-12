@@ -1,0 +1,149 @@
+# Turns the published image into downloads, for x86_64 and aarch64:
+#   mandara-os-<version>-<arch>.iso        installer for USB sticks and VMs
+#   mandara-os-<version>-<arch>.qcow2.zst  GNOME Boxes, virt-manager, QEMU, Proxmox
+#   mandara-os-<version>-<arch>.vmdk.zst   VirtualBox, VMware
+#   mandara-os-<version>-<arch>.raw.zst    Parallels, UTM, or dd to a disk
+# and attaches them to the GitHub release v<version> of this repository.
+#
+# It runs after "Build OS image" succeeds (which itself only runs when a
+# Mandara release asks for it), or by hand for the current :latest image.
+name: Build disk images
+
+on:
+  workflow_run:
+    workflows: [Build OS image]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-disks
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/thehamdiz/mandara-os
+  BIB: quay.io/centos-bootc/bootc-image-builder:latest
+  # GitHub release assets must stay under 2 GiB; bigger files are split.
+  PART_SIZE: 1900M
+
+jobs:
+  disks:
+    name: Disks (${{ matrix.arch }})
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: write
+      packages: read
+    env:
+      ARCH: ${{ matrix.arch }}
+      PLATFORM: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache /usr/local/share/boost /usr/share/swift || true
+          sudo docker system prune -af >/dev/null 2>&1 || true
+          df -h /
+
+      - name: Install tools
+        run: |
+          missing=()
+          command -v podman >/dev/null || missing+=(podman)
+          command -v zstd >/dev/null || missing+=(zstd)
+          if [ "${#missing[@]}" -gt 0 ]; then sudo apt-get update -q && sudo apt-get install -yq "${missing[@]}"; fi
+
+      - name: Pull the image
+        id: image
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "$REGISTRY_TOKEN" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          # Installed systems follow :latest, so `bootc upgrade` brings each
+          # new Mandara release.
+          sudo podman pull --platform "$PLATFORM" "$IMAGE:latest"
+          version=$(sudo podman image inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$IMAGE:latest")
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::the image has no Mandara version label (got '$version')"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Virtual machine disks (qcow2, vmdk, raw)
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          sudo podman run --rm --privileged --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v ./output:/output \
+            -v ./disk_config/disk.toml:/config.toml:ro \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            "$BIB" --type qcow2 --type vmdk --type raw --rootfs btrfs --use-librepo=True \
+            "$IMAGE:latest"
+
+      - name: Installer ISO
+        run: |
+          set -euo pipefail
+          mkdir -p output-iso
+          sudo podman run --rm --privileged --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v ./output-iso:/output \
+            -v ./disk_config/iso.toml:/config.toml:ro \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            "$BIB" --type anaconda-iso --rootfs btrfs --use-librepo=True \
+            "$IMAGE:latest"
+
+      - name: Package
+        env:
+          VERSION: ${{ steps.image.outputs.version }}
+        run: |
+          set -euo pipefail
+          name="mandara-os-$VERSION-$ARCH"
+          mkdir dist
+          sudo chown -R "$(id -u):$(id -g)" output output-iso
+          mv output-iso/bootiso/install.iso "dist/$name.iso"
+          zstd -T0 -10 --rm output/qcow2/disk.qcow2 -o "dist/$name.qcow2.zst"
+          zstd -T0 -10 --rm output/vmdk/disk.vmdk -o "dist/$name.vmdk.zst"
+          zstd -T0 -10 --rm output/image/disk.raw -o "dist/$name.raw.zst"
+          cd dist
+          sha256sum -- * > "SHA256SUMS-$ARCH"
+          for f in *.iso *.zst; do
+            if [ "$(stat -c %s "$f")" -gt 2000000000 ]; then
+              split -b "$PART_SIZE" -d -a 2 -- "$f" "$f.part"
+              rm -- "$f"
+            fi
+          done
+          ls -lh
+
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.image.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="v$VERSION"
+          notes="Mandara OS built around [Mandara $VERSION](https://github.com/theHamdiz/mandara/releases/tag/v$VERSION).
+
+          Files over 2 GiB come in parts: join them first, e.g. \`cat mandara-os-$VERSION-x86_64.iso.part* > mandara-os-$VERSION-x86_64.iso\`, then check them against \`SHA256SUMS-<arch>\`. Decompress \`.zst\` disks with \`zstd -d\`.
+
+          The ready-made disks sign in as **mandara** / **mandara**: change the password with \`passwd\` after the first login."
+          gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1 ||
+            gh release create "$tag" --repo "${{ github.repository }}" --title "Mandara OS $VERSION" --notes "$notes" ||
+            gh release view "$tag" --repo "${{ github.repository }}" >/dev/null
+          gh release upload "$tag" dist/* --repo "${{ github.repository }}" --clobber
