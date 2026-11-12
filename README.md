@@ -53,7 +53,8 @@
 **Mandara OS** is a Linux distribution: a hyper-optimized, bloat-free,
 image-based Fedora desktop for software development and everyday personal
 use, for x86_64 and aarch64. It starts from a clean Fedora base, swaps in a
-low-latency kernel and scheduler, compiles its compositor for your CPU, and
+low-latency kernel and scheduler, compiles its compositor for a modern CPU
+baseline (x86-64-v3, or ARMv8 with crypto and CRC), and
 puts [Mandara Shell](https://github.com/theHamdiz/mandara) on
 [MangoWM](https://github.com/mangowm/mango) as the desktop. Everything else
 is left out: no second desktop hiding underneath, no pile of preinstalled
@@ -94,7 +95,7 @@ Mandara OS is the whole machine around it, tuned as one piece:
 | **Desktop** | Mandara on your compositor | Mandara on MangoWM, with Mandara Login, the lock screen and the boot splash |
 | **Kernel** | Your distribution's | CachyOS LTO with `scx_lavd` and KSM (x86_64) |
 | **System tuning** | Your distribution's | Low-latency kernel arguments, BBR, Btrfs with zstd, masked idle services |
-| **Compositor** | Your distribution's package | MangoWM and scenefx compiled with ThinLTO for your CPU |
+| **Compositor** | Your distribution's package | MangoWM and scenefx compiled with ThinLTO for x86-64-v3, or ARMv8 with crypto and CRC |
 | **Developer tools** | Whatever you install | C/C++, Rust, Podman, Docker and 22 Rust command-line tools, ready |
 | **Updates** | Your package manager | Atomic image updates with one-command rollback |
 
@@ -111,9 +112,10 @@ Mandara OS is the whole machine around it, tuned as one piece:
    control and no watchdogs. Same-page merging (KSM) shares identical memory
    between login sessions.
 
-3. **Compiled for your CPU.** MangoWM and its scenefx effects library are
-   built from source with clang at `-O3` and ThinLTO, for x86-64-v3 on
-   x86_64 and with the crypto and CRC extensions on aarch64. Mandara itself
+3. **Compiled for a modern CPU baseline.** MangoWM and its scenefx effects
+   library are built from source with clang at `-O3` and ThinLTO, for a fixed
+   target: x86-64-v3 on x86_64 (so an AVX2-era processor is required) and
+   ARMv8 with the crypto and CRC extensions on aarch64. Mandara itself
    is its x86-64-v3 release build, checked against the release's checksums.
 
 4. **Zero bloat, by rule.** Every package is installed without weak
@@ -232,7 +234,7 @@ to remember: **Super+Return** a terminal, **Super+Space** the launcher,
 
 **What is Mandara OS?** A Linux distribution: an image-based Fedora
 desktop operating system tuned for development and personal use, with the
-CachyOS kernel, sched-ext, Btrfs and a ready developer toolchain, and Mandara
+CachyOS kernel and sched-ext on x86_64, Btrfs and a ready developer toolchain, and Mandara
 Shell on MangoWM as its desktop.
 
 **Is it just Mandara Shell installed on Fedora?** No. Mandara OS replaces

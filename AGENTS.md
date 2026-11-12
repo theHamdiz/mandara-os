@@ -24,7 +24,8 @@ image decides the whole system:
   zstd:1 compression, masked idle services, guest agents that start only on
   their own hypervisor, and no weak dependencies anywhere.
 - **The compositor.** MangoWM and scenefx are compiled from source with
-  clang, `-O3`, ThinLTO and CPU-specific flags.
+  clang, `-O3` and ThinLTO for a fixed baseline: x86-64-v3, or ARMv8 with
+  crypto and CRC.
 - **The desktop.** [Mandara Shell](https://github.com/theHamdiz/mandara) is
   the shell, the login screen (greetd) and the lock screen, with a Plymouth
   boot splash, fonts, icons, cursor and wallpapers chosen to match.
@@ -74,9 +75,16 @@ podman build --platform linux/amd64 --cap-add=SYS_ADMIN \
   --build-arg BASE_IMAGE=ghcr.io/ublue-os/base-main:45 \
   --build-arg MANDARA_VERSION=0.28.0 -t mandara-os .
 
-# What CI checks on a pull request.
+# What CI checks on a pull request (.github/workflows/lint.yml).
 podman run --rm -v "$PWD:/mnt:Z" -w /mnt docker.io/koalaman/shellcheck:stable \
   --shell=bash build_files/*.sh
+podman run --rm -v "$PWD:/mnt:Z" -w /mnt docker.io/koalaman/shellcheck:stable \
+  --shell=sh system_files/usr/bin/mandara system_files/usr/libexec/mandara-os/rustup-seed \
+  system_files/etc/profile.d/*.sh
+python3 -c 'import pathlib, tomllib; [tomllib.loads(f.read_text()) for d in ("disk_config", "system_files") for f in pathlib.Path(d).rglob("*.toml")]'
+xmllint --noout system_files/etc/fonts/conf.d/*.conf
+
+# Also worth running on workflow changes (not in CI).
 podman run --rm -v "$PWD:/repo:Z" -w /repo docker.io/rhysd/actionlint:latest
 
 # MangoWM's own checker on the default config.

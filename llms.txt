@@ -8,7 +8,7 @@ What it does differently:
 
 - Kernel: on x86_64 the CachyOS kernel built with LTO replaces Fedora's, with the sched-ext `scx_lavd` scheduler in performance mode and same-page merging (KSM) for login sessions. aarch64 uses Fedora's kernel.
 - Latency tuning: kernel arguments `preempt=full`, `threadirqs`, `nowatchdog`, `nmi_watchdog=0`, `zswap.enabled=0` (and `split_lock_detect=off` on x86_64); sysctl with BBR congestion control, the fq queue discipline, `vm.swappiness=10` and a large `vm.max_map_count`.
-- Compiled for the CPU: MangoWM and its scenefx effects library are built from source with clang, `-O3`, ThinLTO and `-fno-plt`, for x86-64-v3 on x86_64 and generic+crypto+crc on aarch64. Mandara Shell is its x86-64-v3 release build on x86_64, verified against the release's SHA256SUMS.
+- Compiled for a fixed modern CPU baseline (not for each machine): MangoWM and its scenefx effects library are built from source with clang, `-O3`, ThinLTO and `-fno-plt`, for x86-64-v3 on x86_64 (an AVX2-era processor is required) and ARMv8 generic+crypto+crc on aarch64. Mandara Shell is its x86-64-v3 release build on x86_64, verified against the release's SHA256SUMS.
 - Zero bloat: every package is installed without weak dependencies; printing (CUPS), ModemManager and Avahi are masked; virtual-machine guest agents start only on their own hypervisor; Docker Engine is off until enabled.
 - File system: Btrfs on the ready-made disks, with zstd:1 compression switched on at every boot.
 - Desktop: Mandara Shell is the bar, launcher, notifications, lock screen and login screen (Mandara Login on greetd, in the cage kiosk). Mandara Corniche theme, Plymouth boot splash with the Mandara phoenix, Papirus-Dark icons, Bibata Modern Classic cursor, six bundled wallpapers rotating.
