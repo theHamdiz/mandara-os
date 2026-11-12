@@ -184,6 +184,15 @@ call `sudo` themselves.
   `/usr/lib/mandara/mandara-bin` and runs it, so Mandara's updater (which
   follows `/proc/self/exe`) can patch it without root. The login screen runs
   the image's copy directly.
+- **Never hold back `plymouth-quit`.** Fedora's `greetd.service` waits for
+  `plymouth-quit-wait.service`, which waits for the splash to quit: a
+  `Conflicts=plymouth-quit.service` on greetd deadlocks the boot. The splash
+  stays up into the login screen through `plymouth quit --retain-splash`
+  (a drop-in on `plymouth-quit.service`).
+- **Btrfs options go through `/var`.** On bootc `/sysroot` is mounted
+  read-only, and remounting it fails with "mount point is busy"; `/var` is a
+  writable mount of the same file system, so file-system-wide options such
+  as `compress=zstd:1` are set by remounting `/var`.
 - **The default password.** `mandara-expire-default-password.service`
   expires it on first boot, and greetd `Requires=` it.
 
