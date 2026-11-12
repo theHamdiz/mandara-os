@@ -157,13 +157,15 @@ after the Mandara version it's built around and carries these files for
 | `mandara-os-<version>-<arch>.raw.zst` | Parallels, UTM, or writing straight to a disk |
 | `SHA256SUMS-<arch>` | Checksums for all of the above |
 
-Files over 2 GiB come in parts. Join them, check them, then unpack the
-disks:
+Files over 2 GiB come in numbered parts (`.part00`, `.part01`, …). For the
+file you want, join its parts if it has any, check it, and unpack it if it's
+a disk:
 
 ```bash
-cat mandara-os-<version>-x86_64.iso.part* > mandara-os-<version>-x86_64.iso
-sha256sum -c --ignore-missing SHA256SUMS-x86_64
-zstd -d mandara-os-<version>-x86_64.qcow2.zst
+f=mandara-os-<version>-x86_64.qcow2.zst            # the file you want
+[ -e "$f" ] || cat "$f".part* > "$f"               # only when it came in parts
+grep "  $f\$" SHA256SUMS-x86_64 | sha256sum -c -   # fails if it's missing or wrong
+zstd -d "$f"                                       # disks only, not the ISO
 ```
 
 ## Install
