@@ -46,7 +46,7 @@ A new image is built **only** when Mandara Shell publishes a release.
 | `build_files/build.sh` | Stage 2: COPRs, the kernel swap, packages, Helium's move out of `/opt`, the Rust seed, services, the Plymouth theme, the initramfs, and build-time checks. |
 | `build_files/identity.sh` | Sets Mandara's displayed OS identity from `/usr/lib/mandara/BUILD`, retaining Fedora's package and image-builder compatibility fields. Runs after package installation and before dracut. |
 | `build_files/check-fonts.sh` | Checks the actual fontconfig matches for Arabic, mixed text, Latin and monospace, during the image build. |
-| `tests/` | Regression tests for OS identity generation, installer labels and typography defaults. Run with Python's standard-library unittest runner. |
+| `tests/` | Regression tests for OS identity, installer labels, typography defaults and tmpfiles state creation. Run with Python's standard-library unittest runner. |
 | `system_files/` | Copied over `/` as is: greetd, MangoWM defaults, `/etc/skel` (shells, git, GTK, Mandara config, wallpapers), sysctl, fontconfig, kargs, tmpfiles, systemd units and drop-ins, the Plymouth theme, the `/usr/bin/mandara` launcher and the ujust recipes. |
 | `disk_config/` | bootc-image-builder settings: `disk.toml` for the qcow2, vmdk and raw disks, `iso.toml` for the installer. |
 | `download.sh` | The README's one-line download: picks the architecture, fetches a release's parts in parallel (resuming), joins them, checks the SHA-256 and unpacks disks. POSIX `sh`, needs `curl` (and `zstd` for disks); all of it runs from `main()` on its last line, so a cut-off `curl \| sh` runs nothing. |
