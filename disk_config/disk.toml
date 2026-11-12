@@ -2,9 +2,10 @@
 # Built with --rootfs btrfs; zstd:1 compression is switched on at boot by
 # mandara-btrfs-compress.service.
 
-# The account the ready-made disks start with. Its password is public, so
-# mandara-expire-default-password.service expires it on the first boot and
-# the first login asks for a new one.
+# The account the ready-made disks start with. Its password is public: the
+# README and the release notes tell people to change it with `passwd`. It
+# can't be expired on first boot, because Fedora's greetd (0.10.3) can't
+# change an expired password and would refuse the login.
 [[customizations.user]]
 name = "mandara"
 password = "mandara"

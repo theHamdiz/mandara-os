@@ -134,7 +134,7 @@ The image build runs its own checks before it finishes: `ldd` on `mango`,
    review summary, fix the valid ones, and explain the rest in the thread.
 9. **No secrets in the repository.** Signing keys, tokens and passwords stay
    in GitHub secrets. The only shipped password is the ready-made disks'
-   public `mandara` one, which expires on first boot.
+   public `mandara` one; the docs tell people to change it with `passwd`.
 
 ## How to add things
 
@@ -193,8 +193,14 @@ call `sudo` themselves.
   read-only, and remounting it fails with "mount point is busy"; `/var` is a
   writable mount of the same file system, so file-system-wide options such
   as `compress=zstd:1` are set by remounting `/var`.
-- **The default password.** `mandara-expire-default-password.service`
-  expires it on first boot, and greetd `Requires=` it.
+- **Never expire a password the login screen must accept.** Fedora's greetd
+  (0.10.3) can't change an expired password: when PAM answers "new password
+  required" it ends the login, which Mandara Login shows as a wrong
+  password. Expiring the ready-made disks' `mandara` password on first boot
+  locked everyone out. (greetd's development branch handles it; revisit when
+  Fedora ships a release that does.) `mandara-unexpire-default-password`
+  repairs disks that booted that image, once, and only while the password
+  is still in the forced-change state.
 
 ## Keep the docs in sync
 

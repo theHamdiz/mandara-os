@@ -26,7 +26,7 @@ Key facts:
 - One-line download for the current machine: `curl -fsSL https://raw.githubusercontent.com/theHamdiz/mandara-os/main/download.sh | sh` (installer ISO), or `... | sh -s -- qcow2|vmdk|raw` for a ready-made disk. It detects the architecture, downloads the parts in parallel with resume, joins them, verifies SHA-256 and unpacks.
 - Downloads: GitHub releases named after the Mandara version: `mandara-os-<version>-<arch>.iso`, `.qcow2.zst` (GNOME Boxes, virt-manager, QEMU, Proxmox), `.vmdk.zst` (VirtualBox, VMware), `.raw.zst` (Parallels, UTM, dd), with `SHA256SUMS-<arch>`. Files over 2 GiB come in parts.
 - Requirements: x86_64 needs an x86-64-v3 (AVX2) CPU and Secure Boot off; the bootloader is GRUB (what bootc installs on Fedora).
-- Ready-made disks sign in as `mandara` / `mandara`; the password expires on first boot. The ISO asks for your own account.
+- Ready-made disks sign in as `mandara` / `mandara`; change it with `passwd` after the first login. The ISO asks for your own account.
 - Build pipeline: Mandara's release workflow sends a `mandara-shell-updated` repository_dispatch with the version; `build-os.yml` builds both architectures natively, publishes and signs; `build-disks.yml` makes the downloads with bootc-image-builder. Nothing else builds the image.
 
 ## Docs
