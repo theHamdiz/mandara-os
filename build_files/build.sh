@@ -82,6 +82,11 @@ packages=(
 )
 if [ "$TARGETARCH" = amd64 ]; then
 	packages+=(virtualbox-guest-additions)
+else
+	# Universal Blue's full ffmpeg (x86_64) decodes H.264 itself. Fedora's
+	# ffmpeg-free (aarch64) only decodes it through OpenH264: ask for Cisco's
+	# real library so the noopenh264 stub isn't picked for Celluloid's mpv.
+	packages+=(openh264)
 fi
 
 # Helium installs into /opt, which bootc keeps in /var: install it into a real
