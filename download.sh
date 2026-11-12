@@ -185,8 +185,8 @@ main() {
 	case "$format" in
 	iso) say "Write it to a USB stick with Fedora Media Writer, or boot it in a virtual machine." ;;
 	qcow2) say "Import it into GNOME Boxes, virt-manager or Proxmox. Sign in as mandara / mandara, then change it with passwd." ;;
-	vmdk) say "Attach it as the disk of a new VirtualBox or VMware machine (UEFI). Sign in as mandara / mandara." ;;
-	raw) say "Use it in Parallels or UTM, or write it to a disk. Sign in as mandara / mandara." ;;
+	vmdk) say "Attach it as the disk of a new VirtualBox or VMware machine (UEFI). Sign in as mandara / mandara, then change it with passwd." ;;
+	raw) say "Use it in Parallels or UTM, or write it to a disk. Sign in as mandara / mandara, then change it with passwd." ;;
 	esac
 	if [ "$arch" = x86_64 ]; then
 		say "On x86_64, turn Secure Boot off; in a virtual machine, pass the host CPU through."

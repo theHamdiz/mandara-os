@@ -198,7 +198,9 @@ call `sudo` themselves.
   required" it ends the login, which Mandara Login shows as a wrong
   password. Expiring the ready-made disks' `mandara` password on first boot
   locked everyone out. (greetd's development branch handles it; revisit when
-  Fedora ships a release that does.)
+  Fedora ships a release that does.) `mandara-unexpire-default-password`
+  repairs disks that booted that image, once, and only while the password
+  is still in the forced-change state.
 
 ## Keep the docs in sync
 

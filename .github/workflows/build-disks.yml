@@ -189,6 +189,8 @@ jobs:
           gh release view "$tag" --repo "$REPO" >/dev/null 2>&1 ||
             gh release create "$tag" --repo "$REPO" --title "Mandara OS $VERSION" --notes "$notes" ||
             gh release view "$tag" --repo "$REPO" >/dev/null
+          # A rebuild of a published version gets the current notes too.
+          gh release edit "$tag" --repo "$REPO" --notes "$notes" >/dev/null
           # A rerun may make fewer parts: drop this architecture's old files
           # that this run doesn't replace (the other architecture's stay).
           gh release view "$tag" --repo "$REPO" --json assets -q '.assets[].name' |
