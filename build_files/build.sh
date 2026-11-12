@@ -32,14 +32,15 @@ if [ "$TARGETARCH" = amd64 ]; then
 
 	rpm -e --nodeps kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra || true
 	rm -rf /usr/lib/modules/*
-	install kernel-cachyos-lto kernel-cachyos-lto-devel-matched scx-scheds scx-tools uksmd
+	# cachyos-ksm-settings is what the uksmd package became: KSM for login sessions.
+	install kernel-cachyos-lto kernel-cachyos-lto-devel-matched scx-scheds scx-tools cachyos-ksm-settings
 
 	for hook in 05-rpmostree.install 50-dracut.install; do
 		if [ -e "$hooks/$hook.bak" ]; then
 			mv -f "$hooks/$hook.bak" "$hooks/$hook"
 		fi
 	done
-	systemctl enable scx_loader.service uksmd.service
+	systemctl enable scx_loader.service
 else
 	# No CachyOS or sched-ext builds for aarch64: Fedora's kernel stays,
 	# and so does the scx_loader config (unused there).

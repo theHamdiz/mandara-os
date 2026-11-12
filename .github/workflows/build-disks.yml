@@ -30,6 +30,11 @@ on:
 permissions:
   contents: read
 
+# One run per version: runs for the same release never upload over each other.
+concurrency:
+  group: build-disks-${{ inputs.version }}
+  cancel-in-progress: false
+
 env:
   IMAGE: ghcr.io/thehamdiz/mandara-os
   BIB: quay.io/centos-bootc/bootc-image-builder:latest
