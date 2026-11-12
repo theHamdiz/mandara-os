@@ -90,7 +90,7 @@ xmllint --noout system_files/etc/fonts/conf.d/*.conf
 python3 -m unittest discover -s tests -v
 
 # Session logging integration, in a locally built disposable image.
-podman run --rm -v "$PWD:/repo:ro" -w /repo --entrypoint /usr/bin/python3 \
+podman run --rm -v "$PWD:/repo:ro,Z" -w /repo --entrypoint /usr/bin/python3 \
   localhost/mandara-os tests/integration/session_logging.py
 
 # Also worth running on workflow changes (not in CI).
