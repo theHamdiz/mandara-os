@@ -184,9 +184,11 @@ call `sudo` themselves.
   separate: `customizations.iso.volume_id` in `iso.toml` sets its label
   (`$arch` is expanded by bootc-image-builder). Anaconda uses `NAME` and
   the Fedora `VERSION_ID` for its product and version.
-- **Font defaults run before Fedora's aliases.** The `29-mandara`
-  fontconfig rule selects Alexandria for generic UI requests before Fedora
-  adds Noto aliases. `60-mandara` supplies Latin and mixed-script fallbacks.
+- **Font defaults respect user preferences.** The `52-mandara` fontconfig
+  rule selects Alexandria after per-user preferences, before Fedora adds
+  Noto aliases. Remove Cantarell's early GNOME `system-ui` aliases so they
+  cannot preempt those preferences. `60-mandara` supplies Latin and
+  mixed-script fallbacks.
   Keep explicit family choices intact and test `fc-match`, including
   `lang=ar-eg`, Arabic glyph coverage and Latin monospace. GTK and Mandara
   defaults in `/etc/skel`, and `/etc/mandara/greeter.toml`, select Alexandria

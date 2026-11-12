@@ -25,3 +25,25 @@ check_font 'Inter:charset=0627' Alexandria
 check_font 'monospace:charset=0627' Alexandria
 check_font 'Alexandria:lang=ar' Alexandria
 check_font 'Cairo:lang=ar' Cairo
+
+# A user's strong generic-family aliases take precedence over OS defaults.
+font_config=$(mktemp -d)
+trap 'rm -rf "$font_config"' EXIT
+mkdir -p "$font_config/fontconfig"
+cat >"$font_config/fontconfig/fonts.conf" <<'EOF'
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <alias binding="strong">
+    <family>system-ui</family>
+    <prefer><family>Cairo</family></prefer>
+  </alias>
+  <alias binding="strong">
+    <family>sans-serif</family>
+    <prefer><family>Cairo</family></prefer>
+  </alias>
+</fontconfig>
+EOF
+XDG_CONFIG_HOME="$font_config" check_font 'system\-ui' Cairo
+XDG_CONFIG_HOME="$font_config" check_font 'sans-serif' Cairo
+XDG_CONFIG_HOME="$font_config" check_font 'sans-serif:lang=ar' Cairo

@@ -128,6 +128,9 @@ for wallpaper in /usr/share/backgrounds/mandara/*; do
 done
 
 # --- Fonts -----------------------------------------------------------------
+# Mandara supplies its own system-ui default. Cantarell's early GNOME aliases
+# would otherwise replace that generic name before user preferences load.
+rm -f /etc/fonts/conf.d/31-cantarell.conf /etc/fonts/conf.d/31-cantarell-vf.conf
 fc-cache -f
 bash /tmp/check-fonts.sh
 
