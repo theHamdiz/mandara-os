@@ -40,6 +40,8 @@ if [ "$TARGETARCH" = amd64 ]; then
 			mv -f "$hooks/$hook.bak" "$hooks/$hook"
 		fi
 	done
+	# bootc boots the kernel in /usr/lib/modules; the package's /boot copies stay out.
+	find /boot -mindepth 1 -delete
 	systemctl enable scx_loader.service
 else
 	# No CachyOS or sched-ext builds for aarch64: Fedora's kernel stays,
@@ -89,6 +91,7 @@ if [ -L /opt ]; then
 fi
 install "${packages[@]}"
 mv /opt/helium /usr/lib/helium
+ln -sf /usr/lib/helium/helium-wrapper /usr/bin/helium
 rmdir /opt 2>/dev/null || rm -rf /opt
 ln -s -T var/opt /opt
 mkdir -p /var/opt /var/roothome
