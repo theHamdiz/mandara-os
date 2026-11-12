@@ -7,3 +7,4 @@ CODEX.md
 .agents/
 *.key
 cosign.key
+__pycache__/

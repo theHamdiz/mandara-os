@@ -128,7 +128,11 @@ for wallpaper in /usr/share/backgrounds/mandara/*; do
 done
 
 # --- Fonts -----------------------------------------------------------------
+# Mandara supplies its own system-ui default. Cantarell's early GNOME aliases
+# would otherwise replace that generic name before user preferences load.
+rm -f /etc/fonts/conf.d/31-cantarell.conf /etc/fonts/conf.d/31-cantarell-vf.conf
 fc-cache -f
+bash /tmp/check-fonts.sh
 
 # --- Default apps ------------------------------------------------------------
 # Music opens in Rufin (Celluloid claims audio types too, and would otherwise
@@ -170,6 +174,8 @@ systemctl --global enable podman.socket
 systemctl set-default graphical.target
 
 # --- Boot splash and initramfs ---------------------------------------------
+# dracut copies os-release into the initramfs, so brand the image first.
+bash /tmp/identity.sh
 plymouth-set-default-theme mandara-preloader
 kernels=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d -printf '%f\n')
 if [ "$(printf '%s\n' "$kernels" | wc -l)" -ne 1 ]; then
@@ -177,8 +183,11 @@ if [ "$(printf '%s\n' "$kernels" | wc -l)" -ne 1 ]; then
 	exit 1
 fi
 kver=$kernels
+# There is no syslog socket in the build container; keep the stderr log.
+printf 'sysloglvl=0\n' >/etc/dracut.conf.d/99-mandara-build.conf
 dracut --no-hostonly --kver "$kver" --reproducible -v --add "ostree btrfs plymouth" \
 	-f "/usr/lib/modules/$kver/initramfs.img"
+rm /etc/dracut.conf.d/99-mandara-build.conf
 chmod 0600 "/usr/lib/modules/$kver/initramfs.img"
 
 # --- Checks ----------------------------------------------------------------
@@ -193,6 +202,7 @@ done
 XDG_RUNTIME_DIR=$(mktemp -d) mango -c /etc/mango/config.conf -p
 /usr/lib/mandara/mandara-bin --version
 ujust --list | grep -q mandara-reset-shell
+grub2-script-check /usr/lib/bootupd/grub2-static/configs.d/05_mandara.cfg
 
 # --- Clean up --------------------------------------------------------------
 for repo in /etc/yum.repos.d/_copr*.repo; do
@@ -209,3 +219,12 @@ done
 # /var/cache/libdnf5 is the build's package cache mount; the rest goes.
 find /var/cache -mindepth 1 -maxdepth 1 ! -name libdnf5 -exec rm -rf {} +
 rm -rf /var/log/* /var/lib/dnf /tmp/* /root/.cache
+# tmpfiles creates these package-owned folders and the greeter's portal mask
+# on the installed system. Kernel RPM transaction state is build-only.
+if [ -e /usr/lib/tmpfiles.d/rpm-ostree-autovar.conf ]; then
+	# Universal Blue already supplies these defaults; avoid duplicate entries.
+	rm /usr/lib/tmpfiles.d/mandara-fedora-state.conf
+fi
+rm -rf /var/lib/greetd/.config /var/lib/openvpn /var/lib/power-profiles-daemon /var/lib/rpm-state
+rm -rf /var/lib/AccountsService /var/lib/bluetooth /var/lib/geoclue /var/lib/plymouth /var/spool/plymouth
+rm -rf /run/dnf /run/openvpn-client /run/openvpn-server /run/selinux-policy

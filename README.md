@@ -105,6 +105,9 @@ Mandara OS is the whole machine around it, tuned as one piece:
    desktop that already has one. The login screen is Mandara Login, the
    session is MangoWM with Mandara on top, the boot splash is the Mandara
    phoenix on Corniche blue, and the default theme is Mandara Corniche.
+   The system identifies itself as **Mandara OS**, with the Mandara release
+   version, logo and support links. GRUB lists Mandara OS deployments; fresh
+   installs give you five seconds to choose one, with a cyan highlight.
 
 2. **A kernel tuned for latency.** On x86_64 the CachyOS kernel (built with
    LTO) replaces Fedora's, with sched-ext's `scx_lavd` scheduler in
@@ -135,9 +138,11 @@ Mandara OS is the whole machine around it, tuned as one piece:
    zoxide and atuin already set up in bash and fish, and delta as git's
    pager.
 
-7. **Latin and Arabic as equals.** Inter, Alexandria, Cairo and JetBrains
-   Mono are the system fonts, Noto covers every other language Mandara is
-   translated into, and colour emoji just work.
+7. **Latin and Arabic as equals.** Alexandria is the default interface font
+   for both scripts, including GTK apps, Mandara and the login screen.
+   Cairo and Inter are fallbacks, JetBrains Mono handles code, Noto covers
+   other scripts, and colour emoji just work. Applications and users can
+   still choose a different font explicitly.
 
 8. **Btrfs with compression.** The ready-made disks use Btrfs, and zstd:1
    compression is switched on at every boot.
@@ -235,6 +240,13 @@ sudo bootc switch ghcr.io/thehamdiz/mandara-os:latest
   key your firmware trusts.
 - The bootloader is GRUB, which is what bootc installs on Fedora. Its menu
   lists the previous image too, so you can boot back into it.
+- The installer is named **Mandara OS**, and the ISO volume label starts
+  with `Mandara-OS`. Its installer version number is the Fedora base
+  version; the installed system displays the Mandara release version.
+
+The machine-readable `ID=fedora` and numeric `VERSION_ID` stay in
+`os-release` for Fedora repositories and bootc-image-builder. Mandara's own
+identity is in `NAME`, `PRETTY_NAME`, `IMAGE_ID` and `IMAGE_VERSION`.
 
 ## Living with it
 

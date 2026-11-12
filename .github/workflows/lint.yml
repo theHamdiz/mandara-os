@@ -35,6 +35,9 @@ jobs:
               print("ok", f)
           PY
 
+      - name: OS regression tests
+        run: python3 -m unittest discover -s tests -v
+
       - name: Fontconfig
         run: |
           sudo apt-get install -yq libxml2-utils >/dev/null

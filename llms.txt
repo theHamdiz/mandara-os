@@ -15,7 +15,8 @@ What it does differently:
 - Apps: exactly five. Ghostty (terminal), Helium (browser), Nautilus (files, with built-in archive extraction and compression through gnome-autoar/libarchive), Celluloid (video player, on mpv) and Rufin (music player for local libraries and music servers, written in Rust; the default for audio files).
 - Developer toolchain: git, git-lfs, gh, clang, lld, lldb, gcc, cmake, meson, ninja, make, perf, bpftool, strace; Podman (rootless Docker-compatible socket on), podman-compose, buildah, skopeo; Docker Engine with buildx and compose; Rust via rustup with a stable toolchain (clippy, rustfmt, rust-analyzer, rust-src) seeded into `~/.rustup` and `~/.cargo` on first use, so it works offline and stays updatable.
 - Terminal tools (23, Rust): ripgrep, bat, fd, starship, helix, delta, zoxide, hyperfine, yazi, zellij, atuin, just, gitui, eza, tokei, bottom, bandwhich, dust, procs, sd, xh, ouch (archives), cargo-nextest; plus fish and bash with starship, zoxide and atuin set up.
-- Typography: Inter, JetBrains Mono, Alexandria and Cairo (Latin and Arabic as equals), Noto for every other script, colour emoji.
+- Typography: Alexandria is the default for Latin and Arabic in the OS, GTK, Mandara and the login screen; Cairo and Inter are fallbacks, JetBrains Mono is for code, Noto covers other scripts, with colour emoji.
+- OS identity: Mandara OS and the Mandara release version in os-release, the Mandara logo and support links, Mandara release banners and firmware boot-entry name. Fedora's machine-readable ID and base VERSION_ID remain for compatibility. GRUB has a five-second menu with a cyan highlight; installer ISO labels start with Mandara-OS.
 - Updates: `sudo bootc upgrade` fetches a new image, applied at the next boot; `sudo bootc rollback` returns to the previous one. Mandara Shell updates itself in place without root (Studio → About → Update now) and falls back to the image's version if an update fails to start.
 
 Key facts:

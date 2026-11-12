@@ -44,6 +44,9 @@ A new image is built **only** when Mandara Shell publishes a release.
 | `Containerfile` | Two stages. `builder` (Fedora) compiles scenefx and MangoWM and downloads everything that isn't a Fedora package into `/out`. The final stage starts from the base image, copies `/out` and `system_files/`, and runs `build_files/build.sh`, then `bootc container lint`. |
 | `build_files/builder.sh` | Stage 1: compiler flags per architecture, the scenefx and MangoWM builds, the Mandara release (checksum-verified), musl release builds of the Rust tools Fedora lacks, Bibata, Alexandria and Cairo. |
 | `build_files/build.sh` | Stage 2: COPRs, the kernel swap, packages, Helium's move out of `/opt`, the Rust seed, services, the Plymouth theme, the initramfs, and build-time checks. |
+| `build_files/identity.sh` | Sets Mandara's displayed OS identity from `/usr/lib/mandara/BUILD`, retaining Fedora's package and image-builder compatibility fields. Runs after package installation and before dracut. |
+| `build_files/check-fonts.sh` | Checks the actual fontconfig matches for Arabic, mixed text, Latin and monospace, during the image build. |
+| `tests/` | Regression tests for OS identity, installer labels, typography defaults and tmpfiles state creation. Run with Python's standard-library unittest runner. |
 | `system_files/` | Copied over `/` as is: greetd, MangoWM defaults, `/etc/skel` (shells, git, GTK, Mandara config, wallpapers), sysctl, fontconfig, kargs, tmpfiles, systemd units and drop-ins, the Plymouth theme, the `/usr/bin/mandara` launcher and the ujust recipes. |
 | `disk_config/` | bootc-image-builder settings: `disk.toml` for the qcow2, vmdk and raw disks, `iso.toml` for the installer. |
 | `download.sh` | The README's one-line download: picks the architecture, fetches a release's parts in parallel (resuming), joins them, checks the SHA-256 and unpacks disks. POSIX `sh`, needs `curl` (and `zstd` for disks); all of it runs from `main()` on its last line, so a cut-off `curl \| sh` runs nothing. |
@@ -84,6 +87,7 @@ podman run --rm -v "$PWD:/mnt:Z" -w /mnt docker.io/koalaman/shellcheck:stable \
   system_files/usr/libexec/mandara-os/rustup-seed system_files/etc/profile.d/*.sh
 python3 -c 'import pathlib, tomllib; [tomllib.loads(f.read_text()) for d in ("disk_config", "system_files") for f in pathlib.Path(d).rglob("*.toml")]'
 xmllint --noout system_files/etc/fonts/conf.d/*.conf
+python3 -m unittest discover -s tests -v
 
 # Also worth running on workflow changes (not in CI).
 podman run --rm -v "$PWD:/repo:Z" -w /repo docker.io/rhysd/actionlint:latest
@@ -94,7 +98,8 @@ XDG_RUNTIME_DIR=$(mktemp -d) mango -c system_files/etc/mango/config.conf -p
 
 The image build runs its own checks before it finishes: `ldd` on `mango`,
 `mmsg` and Mandara, `mango -p` on the default config, `mandara --version`,
-`ujust --list`, and `bootc container lint`. Inspect a built image with
+`ujust --list`, resolved fontconfig faces, the Mandara GRUB drop-in's syntax,
+and `bootc container lint --fatal-warnings`. Inspect a built image with
 `podman run --rm localhost/mandara-os <command>`, for example
 `systemctl is-enabled greetd`.
 
@@ -164,6 +169,36 @@ call `sudo` themselves.
 
 ## Gotchas
 
+- **Brand after installing packages, before dracut.** Fedora's release RPM
+  owns `/usr/lib/os-release`; `identity.sh` changes its display fields only
+  after package installation. `ID=fedora`, numeric `VERSION_ID`, the Fedora
+  CPE and support date stay intact. `IMAGE_ID=mandara-os` and `IMAGE_VERSION`
+  identify the image. `/etc/os-release` links to the image-owned file;
+  `/etc/system-release` and `/etc/redhat-release` link to `mandara-release`,
+  which also gives bootupd the firmware boot-entry name. dracut then copies
+  the branded release into the initramfs.
+- **bootupd uses static GRUB drop-ins.** Put installed-menu defaults in
+  `/usr/lib/bootupd/grub2-static/configs.d/`, before `10_blscfg.cfg`.
+  `/etc/default/grub` does not configure this path. BLS reads the displayed
+  OS name; keep its deployment and rollback entries. The installer ISO is
+  separate: `customizations.iso.volume_id` in `iso.toml` sets its label
+  (`$arch` is expanded by bootc-image-builder). Anaconda uses `NAME` and
+  the Fedora `VERSION_ID` for its product and version.
+- **Font defaults respect user preferences.** The `52-mandara` fontconfig
+  rule selects Alexandria after per-user preferences, before Fedora adds
+  Noto aliases. Remove Cantarell's early GNOME `system-ui` aliases so they
+  cannot preempt those preferences. `60-mandara` supplies Latin and
+  mixed-script fallbacks.
+  Keep explicit family choices intact and test `fc-match`, including
+  `lang=ar-eg`, Arabic glyph coverage and Latin monospace. GTK and Mandara
+  defaults in `/etc/skel`, and `/etc/mandara/greeter.toml`, select Alexandria
+  explicitly too.
+- **No package state in the image.** `mandara-package-state.conf` recreates
+  the greeter's portal mask and package state directories through tmpfiles.
+  Remove their package-created copies, kernel RPM transaction state and
+  build-only `/run` content before the final warning-fatal bootc lint.
+  Fedora bootc also needs `mandara-fedora-state.conf`; Universal Blue already
+  has these entries in `rpm-ostree-autovar.conf`, so drop the extra file there.
 - **One Fedora release everywhere.** `FEDORA_VERSION` must match between the
   builder and the base image: MangoWM links against the builder's wlroots
   and scenefx.
