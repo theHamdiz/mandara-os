@@ -95,8 +95,14 @@ ln -sf /usr/lib/helium/helium-wrapper /usr/bin/helium
 rmdir /opt 2>/dev/null || rm -rf /opt
 ln -s -T var/opt /opt
 mkdir -p /var/opt /var/roothome
-# /usr/local is already /var/usrlocal on bootc bases: writable for local installs.
-test -L /usr/local
+# /usr/local is writable for local installs: /var/usrlocal, as on Universal
+# Blue. Fedora's own bootc image (aarch64) keeps it in the image instead, with
+# only empty folders in it; rpm-ostree's tmpfiles create /var/usrlocal.
+if [ ! -L /usr/local ]; then
+	# shellcheck disable=SC2114 # replaced by the link right below
+	rm -rf /usr/local
+	ln -s -T ../var/usrlocal /usr/local
+fi
 
 # --- Rust: a stable toolchain seeded into each home on first use -----------
 export RUSTUP_HOME=/usr/share/rustup-seed/rustup CARGO_HOME=/usr/share/rustup-seed/cargo
