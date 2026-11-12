@@ -65,7 +65,7 @@ packages=(
 	google-noto-sans-fonts google-noto-sans-arabic-fonts google-noto-sans-devanagari-fonts
 	google-noto-sans-bengali-fonts google-noto-sans-telugu-fonts google-noto-sans-cjk-fonts
 	# The three apps.
-	ghostty helium-bin nautilus gvfs gvfs-mtp gvfs-smb gvfs-archive
+	ghostty helium-bin nautilus gvfs gvfs-mtp gvfs-smb
 	# Virtual machine guests (each one starts only on its own hypervisor).
 	qemu-guest-agent spice-vdagent open-vm-tools-desktop
 	# Developer toolchain.

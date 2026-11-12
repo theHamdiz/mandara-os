@@ -42,8 +42,38 @@ env:
   PART_SIZE: 1900M
 
 jobs:
+  resolve:
+    name: Resolve the image
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: read
+    outputs:
+      digest: ${{ steps.digest.outputs.digest }}
+    steps:
+      - name: One digest for both architectures
+        id: digest
+        env:
+          VERSION: ${{ inputs.version }}
+          INPUT_DIGEST: ${{ inputs.digest }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version must look like 0.28.0 (got '$VERSION')"
+            exit 1
+          fi
+          digest="$INPUT_DIGEST"
+          if [ -z "$digest" ]; then
+            # A manual run: the multi-arch manifest the version tag names now.
+            echo "$REGISTRY_TOKEN" | skopeo login ghcr.io -u "${{ github.actor }}" --password-stdin
+            digest="sha256:$(skopeo inspect --raw --retry-times 3 "docker://$IMAGE:$VERSION" | sha256sum | cut -d' ' -f1)"
+          fi
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "Disks for Mandara $VERSION from \`$IMAGE@$digest\`" >> "$GITHUB_STEP_SUMMARY"
+
   disks:
     name: Disks (${{ matrix.arch }})
+    needs: resolve
     strategy:
       fail-fast: false
       matrix:
@@ -62,7 +92,7 @@ jobs:
       ARCH: ${{ matrix.arch }}
       PLATFORM: ${{ matrix.platform }}
       VERSION: ${{ inputs.version }}
-      DIGEST: ${{ inputs.digest }}
+      DIGEST: ${{ needs.resolve.outputs.digest }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -87,13 +117,9 @@ jobs:
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::version must look like 0.28.0 (got '$VERSION')"
-            exit 1
-          fi
           echo "$REGISTRY_TOKEN" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
-          # The exact image: its digest when build-os.yml calls, else its version tag.
-          if [ -n "$DIGEST" ]; then ref="$IMAGE@$DIGEST"; else ref="$IMAGE:$VERSION"; fi
+          # The exact image both architectures use (resolved once above).
+          ref="$IMAGE@$DIGEST"
           sudo podman pull --platform "$PLATFORM" "$ref"
           label=$(sudo podman image inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$ref")
           if [ "$label" != "$VERSION" ]; then
