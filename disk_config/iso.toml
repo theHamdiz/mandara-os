@@ -1,6 +1,9 @@
 # bootc-image-builder settings for the installer ISO (anaconda-iso). The ISO
 # carries the whole image, so it installs offline. Anaconda asks for the
 # disk (Fedora's default layout is Btrfs) and for your account.
+[customizations.iso]
+volume_id = "Mandara-OS-$arch"
+
 [customizations.installer.modules]
 enable = [
   "org.fedoraproject.Anaconda.Modules.Storage",

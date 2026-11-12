@@ -40,9 +40,11 @@ ARG FEDORA_VERSION
 COPY --from=builder /out/ /
 COPY system_files/ /
 COPY build_files/build.sh /tmp/build.sh
+COPY build_files/identity.sh /tmp/identity.sh
+COPY build_files/check-fonts.sh /tmp/check-fonts.sh
 
 RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     TARGETARCH="${TARGETARCH}" bash /tmp/build.sh && \
-    rm -f /tmp/build.sh
+    rm -f /tmp/build.sh /tmp/identity.sh /tmp/check-fonts.sh
 
-RUN bootc container lint
+RUN bootc container lint --fatal-warnings

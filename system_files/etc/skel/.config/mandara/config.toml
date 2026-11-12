@@ -1,6 +1,11 @@
 # Mandara OS defaults for a new account: the bundled wallpapers, rotating.
 # Everything not set here is Mandara's own default (the Mandara Corniche
 # theme among them), and Mandara Studio keeps this file from now on.
+[typography]
+ui_font = "Alexandria"
+display_font = "Alexandria"
+arabic_font = "Alexandria"
+
 [wallpaper]
 path = "/usr/share/backgrounds/mandara/blue-gold-forest.jpg"
 
