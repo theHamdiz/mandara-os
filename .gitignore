@@ -1,0 +1,9 @@
+/output/
+/scratch/
+/plans/
+.claude/
+CODEX.md
+.codex/
+.agents/
+*.key
+cosign.key
