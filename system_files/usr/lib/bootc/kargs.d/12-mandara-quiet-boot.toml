@@ -1,3 +1,13 @@
-# Show failures instead of routine boot progress, including during slow boots.
-# The kernel prints levels below this threshold: 4 includes KERN_ERR (3).
-kargs = ["quiet", "splash", "loglevel=4", "systemd.show_status=error", "rd.udev.log_level=3"]
+# Graphics-only boot and sign-in: Plymouth and Mandara Login own the display.
+# Kernel and systemd chatter stays in the journal (`journalctl -b`), not on a TTY.
+# One verbose boot: edit the GRUB entry with e, drop quiet/splash, set
+# systemd.show_status=yes and loglevel=7.
+kargs = [
+	"quiet",
+	"splash",
+	"loglevel=0",
+	"systemd.show_status=false",
+	"rd.systemd.show_status=false",
+	"rd.udev.log_level=3",
+	"vt.global_cursor_default=0",
+]

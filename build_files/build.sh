@@ -138,7 +138,14 @@ bash /tmp/check-fonts.sh
 # Music opens in Rufin (Celluloid claims audio types too, and would otherwise
 # win by name): every type Rufin's desktop file lists, in the system defaults
 # /etc/xdg/mimeapps.list, which the XDG spec reads before /usr/share.
-rufin_desktop=io.github.screwys.Rufin.desktop
+# Resolve the .desktop from the installed package: Rufin moved from
+# io.github.screwys.Rufin to app.rufin.rufin when the project became an org.
+mapfile -t rufin_desktops < <(rpm -ql rufin | sed -n 's|.*/applications/\([^/]*[Rr]ufin[^/]*\.desktop\)$|\1|p' | sort -u)
+if [ "${#rufin_desktops[@]}" -ne 1 ]; then
+	echo "expected exactly one Rufin desktop file from the rufin package, found: ${rufin_desktops[*]:-none}" >&2
+	exit 1
+fi
+rufin_desktop=${rufin_desktops[0]}
 {
 	echo "[Default Applications]"
 	sed -n 's/^MimeType=//p' "/usr/share/applications/$rufin_desktop" | tr ';' '\n' |
@@ -160,6 +167,9 @@ fi
 # --- Services --------------------------------------------------------------
 systemctl mask cups.service cups.socket cups.path ModemManager.service \
 	avahi-daemon.service avahi-daemon.socket
+# VT1 is Mandara Login (greetd + Plymouth handoff). A text getty there would
+# flash console output between the splash and the graphical greeter.
+systemctl mask getty@tty1.service
 systemctl enable greetd.service NetworkManager.service bluetooth.service \
 	power-profiles-daemon.service fwupd-refresh.timer
 systemctl enable mandara-btrfs-compress.service mandara-unexpire-default-password.service
