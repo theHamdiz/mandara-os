@@ -1,4 +1,4 @@
-"""Keep successful boots quiet without hiding failure diagnostics."""
+"""Keep boot and sign-in graphical-only: splash and Mandara Login, no TTY."""
 
 import configparser
 import pathlib
@@ -8,6 +8,7 @@ import unittest
 
 
 FILES = pathlib.Path(__file__).resolve().parents[1] / "system_files"
+BUILD = pathlib.Path(__file__).resolve().parents[1] / "build_files"
 
 
 def greeter_command(files=FILES):
@@ -21,19 +22,26 @@ def session_command(files=FILES):
     return shlex.split(config["Desktop Entry"]["Exec"])
 
 
+def boot_kargs(files=FILES):
+    arguments = []
+    for path in (files / "usr/lib/bootc/kargs.d").glob("*.toml"):
+        arguments.extend(tomllib.loads(path.read_text())["kargs"])
+    return arguments
+
+
 class BootTests(unittest.TestCase):
-    def test_boot_status_only_shows_failures(self):
-        arguments = []
-        for path in (FILES / "usr/lib/bootc/kargs.d").glob("*.toml"):
-            arguments.extend(tomllib.loads(path.read_text())["kargs"])
+    def test_boot_is_graphics_only(self):
+        arguments = boot_kargs()
         status = [arg for arg in arguments if arg.startswith("systemd.show_status=")]
-        self.assertEqual(status, ["systemd.show_status=error"])
+        rd_status = [arg for arg in arguments if arg.startswith("rd.systemd.show_status=")]
+        self.assertEqual(status, ["systemd.show_status=false"])
+        self.assertEqual(rd_status, ["rd.systemd.show_status=false"])
         self.assertIn("quiet", arguments)
         self.assertIn("splash", arguments)
-        # printk displays messages strictly below console_loglevel. Errors
-        # must remain visible, with warning and informational chatter hidden.
+        self.assertIn("vt.global_cursor_default=0", arguments)
+        # printk prints levels strictly below console_loglevel. 0 prints none.
         levels = [int(arg.split("=", 1)[1]) for arg in arguments if arg.startswith("loglevel=")]
-        self.assertEqual(levels, [4])
+        self.assertEqual(levels, [0])
 
     def test_greeter_logs_to_journal_and_keeps_its_kiosk_flags(self):
         self.assertEqual(greeter_command(), [
@@ -55,6 +63,21 @@ class BootTests(unittest.TestCase):
         self.assertIn("ExecStart=-/usr/bin/plymouth quit --retain-splash", dropin.read_text())
         for path in (FILES / "usr/lib/systemd/system/greetd.service.d").glob("*.conf"):
             self.assertNotIn("Conflicts=plymouth-quit", path.read_text())
+
+    def test_login_vt_has_no_text_getty(self):
+        dropin = (
+            FILES / "usr/lib/systemd/system/greetd.service.d/10-mandara-graphical-only.conf"
+        ).read_text()
+        self.assertIn("Conflicts=getty@tty1.service", dropin)
+        self.assertIn("StandardOutput=journal", dropin)
+        self.assertIn("StandardError=journal", dropin)
+        build = (BUILD / "build.sh").read_text()
+        self.assertIn("systemctl mask getty@tty1.service", build)
+
+    def test_rufin_desktop_is_resolved_from_the_package(self):
+        build = (BUILD / "build.sh").read_text()
+        self.assertIn("rpm -ql rufin", build)
+        self.assertNotIn("io.github.screwys.Rufin.desktop", build)
 
 
 if __name__ == "__main__":
